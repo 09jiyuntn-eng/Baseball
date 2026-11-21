@@ -1,1232 +1,1466 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="description" content="10세 유소년 야구단부터 명문 중고교, KBO 프로 드래프트, 명예의 전당까지! 나만의 야구 선수를 키우는 커리어 시뮬레이션 웹게임">
-<title>야구 커리어 시뮬레이터 - 유소년부터 전설까지</title>
-<!-- Tailwind CSS Engine -->
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- Google Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
-<style>
-body {
-font-family: 'Noto Sans KR', sans-serif;
-background-color: #0f172a;
-color: #f8fafc;
-user-select: none;
-}
-.title-font {
-font-family: 'Black Han Sans', sans-serif;
-}
-canvas {
-touch-action: none;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="10세 유소년 야구단부터 명문 중고교, KBO 프로 드래프트, 명예의 전당까지! 나만의 야구 선수를 키우는 커리어 시뮬레이션 웹게임">
+    <title>야구 커리어 시뮬레이터 - 유소년부터 전설까지</title>
+    <!-- Tailwind CSS Engine -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        .title-font {
+            font-family: 'Black Han Sans', sans-serif;
+        }
+        canvas {
+            touch-action: none;
+        }
+        button, input {
+            touch-action: manipulation;
+        }
+    </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-2 sm:p-4">
-<!-- GAME CONTAINER -->
-<div id="game-container" class="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden min-h-[680px] flex flex-col relative">
-<!-- HEADER / STATUS BAR (Global) -->
-<header id="global-header" class="bg-slate-950 border-b border-slate-800 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
-<div class="flex items-center gap-3">
-<span class="text-3xl">⚾</span>
-<div>
-<h1 class="title-font text-xl text-amber-400 leading-none" id="header-name">선수 이름</h1>
-<span class="text-xs text-slate-400" id="header-status">10세 / 리틀야구단</span>
-</div>
-</div>
-<div class="flex items-center gap-4 text-xs sm:text-sm">
-<div class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
-<span class="text-slate-400">포지션:</span>
-<span class="font-bold text-amber-400 ml-1" id="header-pos">타자</span>
-</div>
-<div class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
-<span class="text-slate-400">소속:</span>
-<span class="font-bold text-cyan-400 ml-1" id="header-tier">꿈나무 리틀야구단</span>
-</div>
-</div>
-</header>
-<!-- MAIN CONTENT AREA -->
-<main class="flex-1 p-4 sm:p-6 flex flex-col justify-center">
-<!-- SCREEN 1: CHARACTER CREATION -->
-<section id="screen-create" class="flex flex-col items-center text-center space-y-6 max-w-lg mx-auto w-full py-4">
-<div>
-<h2 class="title-font text-3xl sm:text-4xl text-amber-400 mb-2">야구 커리어 시뮬레이터</h2>
-<p class="text-slate-400 text-sm">10세 유소년 야구단부터 전설의 명예의 전당까지, 당신의 야구 인생을 만들어가세요.</p>
-</div>
-<div class="w-full space-y-4 bg-slate-950/60 p-5 rounded-2xl border border-slate-800/80">
-<div>
-<label class="block text-left text-xs font-bold text-slate-300 mb-1">선수 이름</label>
-<input type="text" id="input-name" value="강타자" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white font-bold text-center focus:outline-none focus:border-amber-500">
-</div>
-<!-- Position Selection -->
-<div>
-<label class="block text-left text-xs font-bold text-slate-300 mb-2">주 포지션 선택</label>
-<div class="grid grid-cols-2 gap-3">
-<button type="button" onclick="selectPosition('batter')" id="pos-batter" class="pos-btn border-2 border-amber-500 bg-amber-500/10 p-4 rounded-xl flex flex-col items-center transition">
-<span class="text-3xl mb-1">🏏</span>
-<span class="font-bold text-sm text-amber-400">타자 (Batter)</span>
-<span class="text-[10px] text-slate-400 mt-1">3x3 코스 노림수 미니게임</span>
-</button>
-<button type="button" onclick="selectPosition('pitcher')" id="pos-pitcher" class="pos-btn border-2 border-slate-800 bg-slate-950 p-4 rounded-xl flex flex-col items-center transition">
-<span class="text-3xl mb-1">⚾</span>
-<span class="font-bold text-sm text-slate-300">투수 (Pitcher)</span>
-<span class="text-[10px] text-slate-400 mt-1">구종 & 코스 조합 피칭</span>
-</button>
-</div>
-</div>
-<!-- Style Selection -->
-<div>
-<label class="block text-left text-xs font-bold text-slate-300 mb-2">유소년 재능 스타일</label>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="style-options-grid">
-<!-- Populated by JS -->
-</div>
-</div>
-</div>
-<button onclick="startGame()" class="title-font text-lg sm:text-xl px-10 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 rounded-2xl shadow-lg transform active:scale-95 transition">
-10세 리틀 야구단 입단하기 🚀
-</button>
-</section>
-<!-- SCREEN 2: MAIN DASHBOARD -->
-<section id="screen-dashboard" class="hidden space-y-6">
-<!-- Top Counters Bar -->
-<div class="grid grid-cols-3 gap-3">
-<div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 text-center">
-<div class="text-[11px] text-slate-400 font-bold">현재 나이</div>
-<div class="title-font text-2xl text-amber-400" id="counter-age">10 세</div>
-</div>
-<div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 text-center">
-<div class="text-[11px] text-slate-400 font-bold">자산 (용돈/연봉)</div>
-<div class="title-font text-2xl text-emerald-400" id="counter-money">5 만원</div>
-</div>
-<div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 text-center">
-<div class="text-[11px] text-slate-400 font-bold">팬 인기도</div>
-<div class="title-font text-2xl text-purple-400" id="counter-pop">10</div>
-</div>
-</div>
-<!-- RIVAL STATUS & SKILLS BAR -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-<div class="bg-slate-950/90 p-3 rounded-2xl border border-red-900/40 flex items-center justify-between">
-<div class="flex items-center gap-2">
-<span class="text-2xl">🔥</span>
-<div>
-<div class="text-[10px] text-red-400 font-bold uppercase">숙적 라이벌 (최마구)</div>
-<div class="text-xs font-bold text-slate-200" id="rival-status-text">라이벌 스탯: 25 / 25</div>
-</div>
-</div>
-<span id="rival-win-badge" class="text-[10px] bg-red-950 text-red-400 border border-red-800 px-2.5 py-1 rounded-full font-bold">라이벌 리드 중</span>
-</div>
-<div class="bg-slate-950/90 p-3 rounded-2xl border border-amber-900/40 flex items-center justify-between">
-<div class="flex items-center gap-2">
-<span class="text-2xl">🏅</span>
-<div>
-<div class="text-[10px] text-amber-400 font-bold uppercase">장착한 특수 뱃지 / 스킬</div>
-<div class="text-xs font-bold text-slate-200 truncate max-w-[200px]" id="equipped-skills-text">보유 스킬 없음</div>
-</div>
-</div>
-<button onclick="openTrophyModal()" id="trophy-count-badge" class="text-[10px] bg-amber-950 hover:bg-amber-900 text-amber-400 border border-amber-800 px-2.5 py-1 rounded-full font-bold transition">
-🏆 0개 (보관함)
-</button>
-</div>
-</div>
-<!-- Central Status & Stats Layout -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-<!-- Stat Card 1 -->
-<div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-3">
-<div class="flex justify-between items-center border-b border-slate-800 pb-2">
-<span class="font-bold text-xs text-slate-300">선수 피지컬 & 능력치</span>
-<span class="text-xs font-bold text-cyan-400" id="dash-stage-text">유소년</span>
-</div>
-<div class="space-y-2 text-xs">
-<div>
-<div class="flex justify-between mb-1">
-<span class="text-slate-400" id="stat1-label">파워</span>
-<span class="font-bold text-amber-400" id="stat1-val">20</span>
-</div>
-<div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
-<div id="stat1-bar" class="bg-amber-500 h-full w-1/5 transition-all duration-300"></div>
-</div>
-</div>
-<div>
-<div class="flex justify-between mb-1">
-<span class="text-slate-400" id="stat2-label">컨택</span>
-<span class="font-bold text-cyan-400" id="stat2-val">20</span>
-</div>
-<div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
-<div id="stat2-bar" class="bg-cyan-500 h-full w-1/5 transition-all duration-300"></div>
-</div>
-</div>
-<div>
-<div class="flex justify-between mb-1">
-<span class="text-slate-400" id="stat3-label">주력</span>
-<span class="font-bold text-purple-400" id="stat3-val">20</span>
-</div>
-<div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
-<div id="stat3-bar" class="bg-purple-500 h-full w-1/5 transition-all duration-300"></div>
-</div>
-</div>
-<div>
-<div class="flex justify-between mb-1">
-<span class="text-slate-400" id="stat4-label">선구안 / 멘탈</span>
-<span class="font-bold text-emerald-400" id="stat4-val">20</span>
-</div>
-<div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
-<div id="stat4-bar" class="bg-emerald-500 h-full w-1/5 transition-all duration-300"></div>
-</div>
-</div>
-</div>
-</div>
-<!-- Stat Card 2: Stamina & Age Stage -->
-<div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between">
-<div>
-<div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
-<span class="font-bold text-xs text-slate-300">컨디션 & 피로도</span>
-<span class="text-[10px] text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-800" id="stat-aging-status">유소년 성장기</span>
-</div>
-<div class="space-y-1">
-<div class="flex justify-between text-xs mb-1">
-<span class="text-slate-400">현재 체력</span>
-<span class="font-bold text-emerald-400" id="stat-stamina-val">100 / 100</span>
-</div>
-<div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5">
-<div id="stat-stamina-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full w-full transition-all duration-300"></div>
-</div>
-</div>
-</div>
-<div class="mt-4 pt-3 border-t border-slate-900 flex justify-between items-center text-xs">
-<span class="text-slate-400">소속 리그:</span>
-<span class="font-bold text-slate-200" id="stat-league-name">유소년 리틀리그</span>
-</div>
-</div>
-<!-- Career Record Overview -->
-<div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-3">
-<div class="flex justify-between items-center border-b border-slate-800 pb-2">
-<span class="font-bold text-xs text-slate-300">통산 경기 성적</span>
-<span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full font-bold" id="season-turn-badge">10세 1분기</span>
-</div>
-<div class="grid grid-cols-2 gap-2 text-center pt-1">
-<div class="bg-slate-900 p-2 rounded-xl">
-<div class="text-[10px] text-slate-400" id="rec-label-1">통산 타율</div>
-<div class="font-bold text-base text-amber-400" id="record-avg">.000</div>
-</div>
-<div class="bg-slate-900 p-2 rounded-xl">
-<div class="text-[10px] text-slate-400" id="rec-label-2">안타 / 홈런</div>
-<div class="font-bold text-base text-cyan-400" id="record-hits-hr">0 / 0</div>
-</div>
-</div>
-<div class="text-xs flex justify-between items-center pt-1 text-slate-400">
-<span>계약금 / 연봉:</span>
-<span class="font-bold text-emerald-400" id="record-salary">5 만원</span>
-</div>
-</div>
-</div>
-<!-- OFFERS & SHOP SECTION -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<!-- Inbox: Offers & Notifications -->
-<div class="bg-slate-950/90 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between">
-<div class="flex justify-between items-center mb-3">
-<div class="flex items-center gap-2">
-<span class="text-lg">📩</span>
-<h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">이적 & 스카우트 수신함</h3>
-</div>
-<span id="offer-count-badge" class="text-[10px] bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full font-bold">0건</span>
-</div>
-<div id="inbox-offers-list" class="space-y-2 max-h-36 overflow-y-auto text-xs pr-1">
-<div class="text-slate-500 text-center py-4 text-[11px]">도착한 제안이나 차출 소식이 없습니다.</div>
-</div>
-</div>
-<!-- Career Shop -->
-<div class="bg-slate-950/90 p-4 rounded-2xl border border-slate-800">
-<div class="flex justify-between items-center mb-3">
-<div class="flex items-center gap-2">
-<span class="text-lg">🛍️</span>
-<h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">자산 상점 & 장비 구매</h3>
-</div>
-<span class="text-[10px] text-emerald-400 font-bold" id="shop-money-display">자산: 5만원</span>
-</div>
-<div class="grid grid-cols-2 gap-2 text-xs">
-<button onclick="buyItem('gear')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-2.5 rounded-xl text-left transition">
-<div class="font-bold text-amber-400">⚾ 명품 장비 세트</div>
-<div class="text-[9px] text-slate-400 mt-0.5">능력치 +5 | 비용 <span id="shop-cost-gear">10만원</span></div>
-</button>
-<button onclick="buyItem('tonic')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-2.5 rounded-xl text-left transition">
-<div class="font-bold text-emerald-400">🧪 산삼 특약 보약</div>
-<div class="text-[9px] text-slate-400 mt-0.5">체력 100% 회복 | 비용 <span id="shop-cost-tonic">5만원</span></div>
-</button>
-<button onclick="buySkill('clutch')" class="bg-slate-900 hover:bg-slate-800 border border-amber-900/50 p-2.5 rounded-xl text-left transition">
-<div class="font-bold text-amber-300">🔥 [스킬] 해결사 (Clutch)</div>
-<div class="text-[9px] text-slate-400 mt-0.5">득점권 타율/승률 +15% | 비용 <span id="shop-cost-skill1">20만원</span></div>
-</button>
-<button onclick="buySkill('king')" class="bg-slate-900 hover:bg-slate-800 border border-purple-900/50 p-2.5 rounded-xl text-left transition">
-<div class="font-bold text-purple-300">👑 [스킬] 구장 지배자</div>
-<div class="text-[9px] text-slate-400 mt-0.5">홈런/탈삼진 확률 대폭증가 | 비용 <span id="shop-cost-skill2">30만원</span></div>
-</button>
-<button onclick="buySkill('iron')" class="bg-slate-900 hover:bg-slate-800 border border-teal-900/50 p-2.5 rounded-xl text-left transition col-span-2">
-<div class="font-bold text-teal-300">🛡️ [스킬] 강인한 체력 (Iron Wall)</div>
-<div class="text-[9px] text-slate-400 mt-0.5">모든 훈련 및 경기 체력 소모 20% 감소 패시브 | 비용 <span id="shop-cost-skill3">25만원</span></div>
-</button>
-</div>
-</div>
-</div>
-<!-- Action Hub Buttons -->
-<div class="bg-slate-950/90 p-4 rounded-2xl border border-slate-800">
-<h3 class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">주요 진행 및 활동 선택</h3>
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-<button onclick="doAction('train1')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-left transition flex flex-col justify-between group">
-<span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🏋️‍♂️</span>
-<div>
-<div class="font-bold text-xs text-amber-400" id="btn-train1-title">피지컬 훈련</div>
-<div class="text-[10px] text-slate-400 mt-0.5">체력 -15 | 능력치 상승</div>
-</div>
-</button>
-<button onclick="doAction('train2')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-left transition flex flex-col justify-between group">
-<span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🎯</span>
-<div>
-<div class="font-bold text-xs text-cyan-400" id="btn-train2-title">기술 연마</div>
-<div class="text-[10px] text-slate-400 mt-0.5">체력 -15 | 기술 상승</div>
-</div>
-</button>
-<button onclick="doAction('rest')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-left transition flex flex-col justify-between group">
-<span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🛌</span>
-<div>
-<div class="font-bold text-xs text-emerald-400">휴식 & 영양 관리</div>
-<div class="text-[10px] text-slate-400 mt-0.5">체력 +45 회복</div>
-</div>
-</button>
-<button onclick="doAction('event')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-left transition flex flex-col justify-between group">
-<span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🌟</span>
-<div>
-<div class="font-bold text-xs text-purple-400">대외 활동 / 미디어</div>
-<div class="text-[10px] text-slate-400 mt-0.5">인기도 / 용돈 획득</div>
-</div>
-</button>
-</div>
-<!-- Aging Curve Overcome Special Action -->
-<div id="aging-overcome-box" class="hidden mt-3 p-3 bg-red-950/40 border border-red-500/30 rounded-xl">
-<div class="flex justify-between items-center mb-2">
-<span class="text-xs font-bold text-red-400">⚡ 에이징 커브 극복 케어</span>
-<span class="text-[10px] text-slate-400">노화 억제 & 스탯 재상승</span>
-</div>
-<div class="grid grid-cols-2 gap-2">
-<button onclick="doAgingAction('clinic')" class="bg-red-900/40 hover:bg-red-800/60 border border-red-700/50 p-2 rounded-lg text-left text-xs transition">
-<div class="font-bold text-red-300">💉 해외 특수 클리닉</div>
-<div class="text-[9px] text-slate-400">비용 50억 | 에이징 스탯 감소 회복</div>
-</button>
-<button onclick="doAgingAction('form')" class="bg-amber-900/40 hover:bg-amber-800/60 border border-amber-700/50 p-2 rounded-lg text-left text-xs transition">
-<div class="font-bold text-amber-300">🔬 폼 개조 (메카닉스)</div>
-<div class="text-[9px] text-slate-400">체력 -30 | 기술 스탯 +6 보너스</div>
-</button>
-</div>
-</div>
-<!-- Highlighted Play Game & Auto-Simulation Buttons -->
-<div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-<button onclick="startMatchGame()" class="py-3.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 rounded-xl font-bold title-font text-base text-white shadow-lg flex items-center justify-center gap-2 transform active:scale-98 transition">
-<span>⚾ 경기 출전 (미니게임)</span>
-<span class="text-[10px] font-normal bg-black/30 px-1.5 py-0.5 rounded text-emerald-200">체력 -20</span>
-</button>
-<button onclick="simQuickMatch()" class="py-3.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl font-bold title-font text-base text-cyan-400 shadow flex items-center justify-center gap-2 transform active:scale-98 transition">
-<span>⚡ 빠른 경기 시뮬레이션</span>
-<span class="text-[10px] font-normal bg-black/30 px-1.5 py-0.5 rounded text-cyan-200">자동 진행</span>
-</button>
-</div>
-</div>
-<!-- Voluntary Retire Button -->
-<div class="text-right">
-<button id="btn-voluntary-retire" onclick="confirmVoluntaryRetire()" class="hidden text-xs text-red-400 hover:underline">
-🚨 현역 선수 자진 은퇴 선언하기
-</button>
-</div>
-<!-- Career Activity Logs -->
-<div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 h-32 overflow-y-auto text-xs space-y-1" id="activity-log">
-<!-- Logs populated via JS -->
-</div>
-</section>
-<!-- SCREEN 3: SCHOOL SELECTION MODAL -->
-<section id="screen-school-select" class="hidden flex flex-col items-center justify-center space-y-6 max-w-2xl mx-auto py-4">
-<div class="text-center">
-<h2 class="title-font text-2xl sm:text-3xl text-amber-400 mb-1" id="school-select-title">진학할 명문 야구부 선택</h2>
-<p class="text-xs text-slate-400" id="school-select-desc">학교별 독자적인 훈련 환경과 스탯 보너스가 제공됩니다.</p>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full" id="school-options-grid">
-<!-- School cards -->
-</div>
-<button id="btn-confirm-school" onclick="confirmSchoolSelection()" disabled class="opacity-50 cursor-not-allowed title-font text-lg px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-2xl shadow-lg transition">
-선택한 학교로 진학 확정 🎒
-</button>
-</section>
-<!-- SCREEN 4: KBO DRAFT EVENT -->
-<section id="screen-draft" class="hidden text-center space-y-6 max-w-md mx-auto py-6">
-<div>
-<span class="text-5xl">🏛️</span>
-<h2 class="title-font text-3xl text-amber-400 mt-3 mb-1">KBO 신인 드래프트</h2>
-<p class="text-xs text-slate-400">고등학교 시절의 성적과 능력치에 따라 프로 지명이 결정됩니다.</p>
-</div>
-<div id="draft-result-box" class="bg-slate-950 border border-slate-800 p-6 rounded-2xl space-y-3">
-<!-- Dynamic Draft Result -->
-</div>
-<button onclick="finishDraft()" class="title-font text-lg px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl shadow-lg hover:from-emerald-400 hover:to-teal-500 transition">
-프로 선수 생활 시작하기 ⚾
-</button>
-</section>
-<!-- SCREEN 5: CANVAS MINI-GAME -->
-<section id="screen-minigame" class="hidden flex flex-col items-center justify-center space-y-4">
-<div class="flex justify-between items-center w-full max-w-lg px-2">
-<div class="flex items-center gap-2">
-<span class="text-xl animate-bounce">🔥</span>
-<div>
-<span class="text-xs font-bold text-amber-400" id="game-title-text">9회말 2아웃 만루 승부</span>
-<span class="text-[10px] text-slate-400 block" id="game-sub-text">코스와 구종을 선택하여 승부하세요!</span>
-</div>
-</div>
-<span class="text-xs font-bold bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full border border-amber-500/50" id="game-score-badge">COMBO 0 | 남은 승부: 5</span>
-</div>
-<!-- Pitch / Swing Style Selector -->
-<div id="minigame-control-bar" class="w-full max-w-lg bg-slate-950 border border-slate-800 p-2 rounded-2xl flex flex-wrap justify-between items-center gap-2">
-<span class="text-[11px] font-bold text-slate-400 px-2" id="control-bar-label">1. 구종 선택:</span>
-<div id="pitch-selector-buttons" class="flex gap-1.5 flex-1 justify-end">
-<!-- Populated dynamically for Pitcher or Batter -->
-</div>
-</div>
-<!-- Canvas Element & Interactive 3x3 Strike Zone -->
-<div class="relative border-4 border-amber-500/30 rounded-3xl overflow-hidden shadow-2xl bg-slate-950 w-full max-w-lg">
-<canvas id="gameCanvas" width="640" height="420" class="w-full h-auto block"></canvas>
-<!-- 3x3 Interactive Strike Zone Grid Overlay -->
-<div id="strike-zone-overlay" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto">
-<div class="text-[11px] font-bold text-amber-300 bg-black/70 px-3 py-1 rounded-full mb-2 border border-amber-500/40" id="zone-guide-text">
-2. 투구할 스트라이크 존 코스를 클릭하세요!
-</div>
-<div class="grid grid-cols-3 gap-1.5 w-48 h-48 sm:w-56 sm:h-56 p-2 bg-slate-950/60 border-2 border-amber-400/80 rounded-2xl backdrop-blur-[2px] shadow-2xl" id="zone-grid-buttons">
-<!-- 9 Zone Cells generated by JS -->
-</div>
-</div>
-<!-- Overlay Result Message -->
-<div id="game-overlay-msg" class="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center hidden space-y-3 p-4 z-20">
-<span class="title-font text-3xl sm:text-4xl text-amber-400 animate-bounce text-center" id="overlay-title">STRIKE OUT!!</span>
-<span class="text-sm font-bold text-slate-200 text-center" id="overlay-sub">완벽한 코스 공략!</span>
-<div id="overlay-reward-badge" class="bg-amber-500/10 border border-amber-500/40 text-amber-300 px-4 py-1.5 rounded-xl text-xs font-bold">
-보상 획득
-</div>
-<button onclick="nextBall()" class="mt-2 text-sm px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 rounded-xl font-bold title-font shadow-lg transform active:scale-95 transition">
-다음 승부 진행 ▶
-</button>
-</div>
-</div>
-<div class="text-center text-xs text-slate-400" id="minigame-stats-brief">
-💡 상대의 허를 찌르는 코스를 선택할수록 성공 확률이 대폭 상승합니다!
-</div>
-</section>
-<!-- SCREEN 6: RETIREMENT & ENDING -->
-<section id="screen-ending" class="hidden text-center space-y-6 max-w-xl mx-auto py-6">
-<div>
-<span class="text-6xl" id="ending-icon">👑</span>
-<h2 class="title-font text-3xl sm:text-4xl text-amber-400 mt-2" id="ending-title">전설의 명예의 전당 헌액</h2>
-<p class="text-xs text-slate-400 mt-1" id="ending-subtitle">위대한 야구 커리어를 마치고 선수 생활을 은퇴합니다.</p>
-</div>
-<div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl text-left space-y-4">
-<h3 class="title-font text-base text-amber-400 border-b border-slate-800 pb-2">📜 최종 커리어 결산 리포트</h3>
-<div class="grid grid-cols-2 gap-3 text-xs" id="ending-stats-grid">
-<!-- Populated by JS -->
-</div>
-<div class="text-xs text-slate-300 bg-slate-900 p-4 rounded-xl leading-relaxed" id="ending-story-text">
-야구 팬들은 당신의 위대한 플레이를 영원히 기억할 것입니다.
-</div>
-</div>
-<button onclick="location.reload()" class="title-font text-lg px-10 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold rounded-2xl shadow-lg hover:from-amber-400 hover:to-orange-400 transition">
-새로운 선수 키우기 🔄
-</button>
-</section>
-<!-- MODAL: TROPHY COLLECTION -->
-<div id="modal-trophy" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-<div class="bg-slate-900 border border-amber-500/40 rounded-3xl max-w-md w-full p-6 space-y-4 text-center relative shadow-2xl">
-<button onclick="closeTrophyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg font-bold">✕</button>
-<div class="flex items-center justify-center gap-2">
-<span class="text-3xl">🏆</span>
-<h3 class="title-font text-2xl text-amber-400">명예 훈장 & 트로피 보관함</h3>
-</div>
-<p class="text-xs text-slate-400">커리어 동안 획득한 수상 기록 모음입니다.</p>
-<div id="trophy-list-grid" class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto text-xs py-2">
-<!-- Dynamic Trophies -->
-</div>
-<button onclick="closeTrophyModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 font-bold text-xs text-slate-200 rounded-xl transition">
-창 닫기
-</button>
-</div>
-</div>
-</main>
-</div>
-<!-- AUDIO SYNTH & COMPLETE GAME LOGIC -->
-<script>
-let audioCtx = null;
-function initAudio() {
-if (!audioCtx) {
-audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-}
-}
-function playSound(type) {
-try {
-initAudio();
-if (!audioCtx) return;
-const now = audioCtx.currentTime;
-const osc = audioCtx.createOscillator();
-const gain = audioCtx.createGain();
-osc.connect(gain);
-gain.connect(audioCtx.destination);
-if (type === 'hit') {
-osc.type = 'triangle';
-osc.frequency.setValueAtTime(520, now);
-osc.frequency.exponentialRampToValueAtTime(140, now + 0.2);
-gain.gain.setValueAtTime(1, now);
-gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-osc.start(now);
-osc.stop(now + 0.2);
-} else if (type === 'homerun') {
-osc.type = 'sawtooth';
-osc.frequency.setValueAtTime(220, now);
-osc.frequency.exponentialRampToValueAtTime(880, now + 0.6);
-gain.gain.setValueAtTime(1, now);
-gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
-osc.start(now);
-osc.stop(now + 0.6);
-} else if (type === 'cheer') {
-osc.type = 'triangle';
-osc.frequency.setValueAtTime(440, now);
-osc.frequency.linearRampToValueAtTime(980, now + 0.5);
-gain.gain.setValueAtTime(0.6, now);
-gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-osc.start(now);
-osc.stop(now + 0.5);
-} else if (type === 'out') {
-osc.type = 'square';
-osc.frequency.setValueAtTime(200, now);
-osc.frequency.setValueAtTime(130, now + 0.12);
-gain.gain.setValueAtTime(0.4, now);
-gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-osc.start(now);
-osc.stop(now + 0.25);
-}
-} catch (e) { console.error(e); }
-}
-const MAX_PITCH_SPEED = 168;
-function getAgeSpeedLimit(age) {
-if (age <= 12) return 118;
-if (age <= 15) return 136;
-if (age <= 18) return 154;
-return MAX_PITCH_SPEED;
-}
-const player = {
-name: "강타자",
-position: "batter",
-style: "power",
-age: 10,
-quarter: 1,
-money: 5,
-popularity: 10,
-stamina: 100,
-maxStamina: 100,
-school: "꿈나무 리틀야구단",
-isPro: false,
-proTeam: "",
-stat1: 20,
-stat2: 20,
-stat3: 20,
-stat4: 20,
-hits: 0,
-homeRuns: 0,
-atBats: 0,
-wins: 0,
-strikeOuts: 0,
-earnedRuns: 0,
-inningsPitched: 0,
-gamesPlayed: 0,
-rivalStat1: 25,
-rivalStat2: 25,
-skills: [],
-trophies: [],
-inbox: []
-};
-const styleTemplates = {
-batter: [
-{ id: "power", name: "거포 슬러거형", desc: "파워 +15 | 장타력 특화", stat1: 30, stat2: 15, stat3: 15 },
-{ id: "contact", name: "천재 교타자형", desc: "컨택 +15 | 안타 확률 상승", stat1: 15, stat2: 30, stat3: 15 },
-{ id: "speed", name: "대주자 대수비형", desc: "주력 +15 | 도루/주루 우수", stat1: 15, stat2: 15, stat3: 30 }
-],
-pitcher: [
-{ id: "fireballer", name: "강속구 파이어볼러", desc: "구속 112km/h 시작 | 연령별 최고구속 빠른 도달", stat1: 112, stat2: 15, stat3: 15 },
-{ id: "control", name: "칼제구 컨트롤 아티스트", desc: "제구 +15 | 코너워크 정밀도 우수", stat1: 105, stat2: 30, stat3: 15 },
-{ id: "breaking", name: "마구 변화구 마스터", desc: "변화구 +15 | 슬라이더/커브 각도 극대화", stat1: 105, stat2: 15, stat3: 30 }
-]
-};
-const schoolsMiddle = [
-{ name: "덕수중학교", bonusText: "전 능력치 +5", statBonus: 5 },
-{ name: "휘문중학교", bonusText: "파워/구속 +7", statBonus: 7 },
-{ name: "경남중학교", bonusText: "기술/제구 +7", statBonus: 7 },
-{ name: "광주충장중", bonusText: "체력/성장기 특화 +6", statBonus: 6 }
-];
-const schoolsHigh = [
-{ name: "덕수고등학교", bonusText: "1라운드 드래프트 프리미엄 & 전체 +8", statBonus: 8 },
-{ name: "장충고등학교", bonusText: "강타자/구속 +10", statBonus: 10 },
-{ name: "경남고등학교", bonusText: "변화구/컨택 +10", statBonus: 10 },
-{ name: "북일고등학교", bonusText: "체력 대폭 +20", statBonus: 8 }
-];
-let selectedSchoolTemp = null;
-let miniGameActive = false;
-let ballsRemaining = 5;
-let comboCount = 0;
-let selectedOptionType = 'fastball';
-let isPitchAnimating = false;
-let animId = null;
-const zoneNames = [
-"몸쪽 높은 공", "한가운데 높은 공", "바깥쪽 높은 공",
-"몸쪽 꽉찬 공", "한가운데 실투성", "바깥쪽 꽉찬 공",
-"몸쪽 낮은 공", "한가운데 낮은 공", "바깥쪽 낮은 공"
-];
-function selectPosition(pos) {
-player.position = pos;
-document.querySelectorAll('.pos-btn').forEach(btn => {
-btn.className = "pos-btn border-2 border-slate-800 bg-slate-950 p-4 rounded-xl flex flex-col items-center transition";
-});
-const activeBtn = document.getElementById(⁠pos-${pos}⁠);
-if (activeBtn) {
-activeBtn.className = "pos-btn border-2 border-amber-500 bg-amber-500/10 p-4 rounded-xl flex flex-col items-center transition";
-}
-renderStyleOptions();
-}
-function renderStyleOptions() {
-const grid = document.getElementById('style-options-grid');
-grid.innerHTML = '';
-const styles = styleTemplates[player.position];
-styles.forEach((st, idx) => {
-const isSelected = idx === 0;
-if (isSelected) player.style = st.id;
-const btn = document.createElement('button');
-btn.type = 'button';
-btn.id = ⁠style-btn-${st.id}⁠;
-btn.className = ⁠style-btn border p-3 rounded-xl text-left transition ${isSelected ? 'border-amber-500 bg-amber-500/10' : 'border-slate-800 bg-slate-900'}⁠;
-btn.onclick = () => {
-player.style = st.id;
-document.querySelectorAll('.style-btn').forEach(b => b.className = "style-btn border border-slate-800 bg-slate-900 p-3 rounded-xl text-left transition");
-btn.className = "style-btn border border-amber-500 bg-amber-500/10 p-3 rounded-xl text-left transition";
-};
-btn.innerHTML = ⁠<div class="font-bold text-xs text-amber-400 mb-1">${st.name}</div> <div class="text-[10px] text-slate-400">${st.desc}</div>⁠;
-grid.appendChild(btn);
-});
-}
-function startGame() {
-const nameInput = document.getElementById('input-name').value.trim();
-if (nameInput) player.name = nameInput;
-const selectedTpl = styleTemplates[player.position].find(s => s.id === player.style);
-if (selectedTpl) {
-player.stat1 = selectedTpl.stat1;
-player.stat2 = selectedTpl.stat2;
-player.stat3 = selectedTpl.stat3;
-}
-document.getElementById('screen-create').classList.add('hidden');
-document.getElementById('screen-dashboard').classList.remove('hidden');
-logActivity(⁠🎉 10세 유소년 꿈나무 야구단에 입단하였습니다! 커리어가 시작됩니다.⁠);
-updateUI();
-}
-function updateUI() {
-document.getElementById('header-name').innerText = player.name;
-document.getElementById('header-status').innerText = ⁠${player.age}세 / ${player.school}⁠;
-document.getElementById('header-pos').innerText = player.position === 'batter' ? '타자' : '투수';
-document.getElementById('header-tier').innerText = player.school;
-document.getElementById('counter-age').innerText = ⁠${player.age} 세⁠;
-document.getElementById('counter-money').innerText = player.isPro ? ⁠${player.money} 억원⁠ : ⁠${player.money} 만원⁠;
-document.getElementById('counter-pop').innerText = player.popularity;
-if (player.position === 'batter') {
-document.getElementById('stat1-label').innerText = "파워";
-document.getElementById('stat2-label').innerText = "컨택";
-document.getElementById('stat3-label').innerText = "주력";
-document.getElementById('stat4-label').innerText = "선구안 / 멘탈";
-document.getElementById('stat1-val').innerText = player.stat1;
-document.getElementById('stat2-val').innerText = player.stat2;
-document.getElementById('stat3-val').innerText = player.stat3;
-document.getElementById('stat4-val').innerText = player.stat4;
-document.getElementById('stat1-bar').style.width = ⁠${Math.min(100, player.stat1)}%⁠;
-document.getElementById('stat2-bar').style.width = ⁠${Math.min(100, player.stat2)}%⁠;
-document.getElementById('stat3-bar').style.width = ⁠${Math.min(100, player.stat3)}%⁠;
-document.getElementById('stat4-bar').style.width = ⁠${Math.min(100, player.stat4)}%⁠;
-document.getElementById('rec-label-1').innerText = "통산 타율";
-const avg = player.atBats > 0 ? (player.hits / player.atBats).toFixed(3) : ".000";
-document.getElementById('record-avg').innerText = avg.startsWith('0') ? avg.substring(1) : avg;
-document.getElementById('rec-label-2').innerText = "안타 / 홈런";
-document.getElementById('record-hits-hr').innerText = ⁠${player.hits} / ${player.homeRuns}⁠;
-} else {
-const ageCap = getAgeSpeedLimit(player.age);
-document.getElementById('stat1-label').innerText = ⁠최고 구속 (한계 ${ageCap}km)⁠;
-document.getElementById('stat2-label').innerText = "제구력";
-document.getElementById('stat3-label').innerText = "변화구";
-document.getElementById('stat4-label').innerText = "위기관리 / 운영";
-document.getElementById('stat1-val').innerText = ⁠${player.stat1} km/h⁠;
-document.getElementById('stat2-val').innerText = player.stat2;
-document.getElementById('stat3-val').innerText = player.stat3;
-document.getElementById('stat4-val').innerText = player.stat4;
-document.getElementById('stat1-bar').style.width = ⁠${Math.min(100, ((player.stat1 - 95) / 73) * 100)}%⁠;
-document.getElementById('stat2-bar').style.width = ⁠${Math.min(100, player.stat2)}%⁠;
-document.getElementById('stat3-bar').style.width = ⁠${Math.min(100, player.stat3)}%⁠;
-document.getElementById('stat4-bar').style.width = ⁠${Math.min(100, player.stat4)}%⁠;
-document.getElementById('rec-label-1').innerText = "방어율 (ERA)";
-const era = player.inningsPitched > 0 ? ((player.earnedRuns * 9) / player.inningsPitched).toFixed(2) : "0.00";
-document.getElementById('record-avg').innerText = era;
-document.getElementById('rec-label-2').innerText = "승리 / 탈삼진";
-document.getElementById('record-hits-hr').innerText = ⁠${player.wins}승 / ${player.strikeOuts}K⁠;
-}
-document.getElementById('stat-stamina-val').innerText = ⁠${player.stamina} / ${player.maxStamina}⁠;
-document.getElementById('stat-stamina-bar').style.width = ⁠${(player.stamina / player.maxStamina) * 100}%⁠;
-document.getElementById('season-turn-badge').innerText = ⁠${player.age}세 ${player.quarter}분기⁠;
-document.getElementById('record-salary').innerText = player.isPro ? ⁠${player.money} 억⁠ : ⁠${player.money} 만원⁠;
-document.getElementById('rival-status-text').innerText = ⁠최마구 스탯: ${player.rivalStat1} / ${player.rivalStat2}⁠;
-const isAhead = (player.stat1 + player.stat2) >= (player.rivalStat1 + player.rivalStat2);
-document.getElementById('rival-win-badge').innerText = isAhead ? "플레이어 리드!" : "라이벌 리드 중";
-document.getElementById('rival-win-badge').className = isAhead ? "text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2.5 py-1 rounded-full font-bold" : "text-[10px] bg-red-950 text-red-400 border border-red-800 px-2.5 py-1 rounded-full font-bold";
-document.getElementById('equipped-skills-text').innerText = player.skills.length > 0 ? player.skills.join(', ').toUpperCase() : "보유 스킬 없음";
-document.getElementById('trophy-count-badge').innerText = ⁠🏆 ${player.trophies.length}개 (보관함)⁠;
-document.getElementById('shop-money-display').innerText = ⁠자산: ${player.money}${player.isPro ? '억' : '만원'}⁠;
-const agingBox = document.getElementById('aging-overcome-box');
-if (player.age >= 30) {
-agingBox.classList.remove('hidden');
-document.getElementById('btn-voluntary-retire').classList.remove('hidden');
-} else {
-agingBox.classList.add('hidden');
-}
-}
-function logActivity(text) {
-const logBox = document.getElementById('activity-log');
-const entry = document.createElement('div');
-entry.className = "text-slate-300 py-0.5 border-b border-slate-900";
-entry.innerHTML = ⁠<span class="text-amber-400 font-bold">[${player.age}세 ${player.quarter}Q]</span> ${text}⁠;
-logBox.prepend(entry);
-}
-function advanceTurn() {
-player.quarter++;
-if (player.quarter > 4) {
-player.quarter = 1;
-player.age++;
-logActivity(⁠🎂 한 해가 지나 ${player.age}세가 되었습니다!⁠);
-player.rivalStat1 += Math.floor(Math.random() * 5) + 3;
-player.rivalStat2 += Math.floor(Math.random() * 5) + 3;
-if (player.age >= 32) {
-player.stat1 = Math.max(10, player.stat1 - 2);
-player.stat2 = Math.max(10, player.stat2 - 2);
-logActivity(⁠⚠️ 노화로 인해 신체 능력치가 약간 하락했습니다.⁠);
-}
-if (player.age === 13) triggerSchoolChoice('middle');
-else if (player.age === 16) triggerSchoolChoice('high');
-else if (player.age === 18) triggerDraftEvent();
-else if (player.age >= 40) triggerEnding();
-}
-updateUI();
-}
-function doAction(type) {
-if (player.stamina < 15 && type !== 'rest') {
-logActivity('⚠️ 체력이 부족합니다. 휴식을 취하세요!');
-return;
-}
-const ironWallBonus = player.skills.includes('iron') ? 3 : 0;
-if (type === 'train1') {
-player.stamina -= (15 - ironWallBonus);
-if (player.position === 'pitcher') {
-const ageLimit = getAgeSpeedLimit(player.age);
-if (player.stat1 >= ageLimit) {
-player.stat4 += 4;
-logActivity(⁠🛑 ${player.age}세 신체 한계 구속(${ageLimit}km/h) 도달! 대신 [위기관리/투구운영] 스탯이 +4 상승했습니다.⁠);
-} else {
-player.stat1 = Math.min(ageLimit, player.stat1 + 2);
-player.stat4 += 1;
-logActivity(⁠🏋️ 피지컬 훈련 완료! 최고 구속 ${player.stat1}km/h 달성 (위기관리 +1)⁠);
-}
-} else {
-player.stat1 += 3;
-player.stat4 += 1;
-logActivity(⁠🏋️ 피지컬 훈련 완료! [파워] +3, [선구안/멘탈] +1⁠);
-}
-} else if (type === 'train2') {
-player.stamina -= (15 - ironWallBonus);
-player.stat2 += 3;
-player.stat3 += 2;
-player.stat4 += 2;
-logActivity(⁠🎯 기술 연마 완료! [${player.position === 'batter' ? '컨택/주력/선구안' : '제구/변화구/운영'}] 고르게 상승!⁠);
-} else if (type === 'rest') {
-player.stamina = Math.min(player.maxStamina, player.stamina + 45);
-logActivity(⁠🛌 충분한 휴식을 통해 체력을 회복했습니다.⁠);
-} else if (type === 'event') {
-player.stamina -= (10 - ironWallBonus);
-player.popularity += 4;
-player.stat4 += 2;
-const earn = player.isPro ? 1 : 5;
-player.money += earn;
-logActivity(⁠🌟 대외 활동 및 멘탈 케어! 인기도 +4, 멘탈/운영 +2, 자산 +${earn}${player.isPro ? '억' : '만원'}⁠);
-}
-advanceTurn();
-}
-function simQuickMatch() {
-if (player.stamina < 20) {
-logActivity('⚠️ 경기를 시뮬레이션할 체력이 부족합니다!');
-return;
-}
-const stamCost = player.skills.includes('iron') ? 16 : 20;
-player.stamina -= stamCost;
-if (player.position === 'batter') {
-player.atBats += 4;
-const hits = Math.min(4, Math.floor(Math.random() * 3));
-player.hits += hits;
-if (hits > 1 && Math.random() < 0.35) player.homeRuns++;
-logActivity(⁠⚡ 오늘 경기 결과: 4타수 ${hits}안타 기록!⁠);
-} else {
-player.inningsPitched += 6;
-const ks = Math.floor(Math.random() * 5) + 2;
-player.strikeOuts += ks;
-if (Math.random() > 0.35) player.wins++;
-logActivity(⁠⚡ 오늘 투구 결과: 6이닝 ${ks}탈삼진 기록!⁠);
-}
-advanceTurn();
-}
-function buyItem(item) {
-const cost = item === 'gear' ? 10 : 5;
-if (player.money < cost) {
-logActivity('⚠️ 구매를 위한 자산이 부족합니다!');
-return;
-}
-player.money -= cost;
-if (item === 'gear') {
-if (player.position === 'pitcher') {
-const ageLimit = getAgeSpeedLimit(player.age);
-player.stat1 = Math.min(ageLimit, player.stat1 + 3);
-} else {
-player.stat1 += 5;
-}
-player.stat2 += 5;
-player.stat4 += 5;
-logActivity(⁠⚾ 최고급 명품 장비 세트 구매! 기술/멘탈 능력치 대폭 상승!⁠);
-} else {
-player.stamina = player.maxStamina;
-logActivity(⁠🧪 산삼 특약 보약 복용! 체력 100% 완전 회복⁠);
-}
-updateUI();
-}
-function buySkill(skillId) {
-if (player.skills.includes(skillId)) {
-logActivity('ℹ️ 이미 보유하고 있는 스킬입니다!');
-return;
-}
-const cost = skillId === 'clutch' ? 20 : skillId === 'king' ? 30 : 25;
-if (player.money < cost) {
-logActivity('⚠️ 스킬 습득을 위한 자산이 부족합니다!');
-return;
-}
-player.money -= cost;
-player.skills.push(skillId);
-logActivity(⁠⚡ 특수 뱃지 스킬 [${skillId.toUpperCase()}] 습득 완료!⁠);
-updateUI();
-}
-function doAgingAction(act) {
-if (act === 'clinic') {
-if (player.money < 50) {
-logActivity('⚠️ 특수 클리닉 비용(50억)이 부족합니다!');
-return;
-}
-player.money -= 50;
-player.stat1 += 5;
-player.stat2 += 5;
-logActivity(⁠💉 해외 특수 클리닉 치료를 받아 노화된 신체 감각을 회복했습니다!⁠);
-} else {
-player.stamina -= 30;
-player.stat2 += 6;
-logActivity(⁠🔬 폼 개조 연구를 통해 베테랑 기술 스탯 +6을 확보했습니다!⁠);
-}
-updateUI();
-}
-function triggerSchoolChoice(type) {
-document.getElementById('screen-dashboard').classList.add('hidden');
-document.getElementById('screen-school-select').classList.remove('hidden');
-const grid = document.getElementById('school-options-grid');
-grid.innerHTML = '';
-const schools = type === 'middle' ? schoolsMiddle : schoolsHigh;
-document.getElementById('school-select-title').innerText = ⁠${type === 'middle' ? '13세 중학교' : '16세 고등학교'} 야구부 진학⁠;
-schools.forEach(sch => {
-const card = document.createElement('div');
-card.className = "bg-slate-950 border border-slate-800 p-4 rounded-2xl text-left cursor-pointer hover:border-amber-500 transition";
-card.onclick = () => {
-selectedSchoolTemp = sch;
-document.querySelectorAll('#school-options-grid > div').forEach(c => c.className = "bg-slate-950 border border-slate-800 p-4 rounded-2xl text-left cursor-pointer transition");
-card.className = "bg-slate-950 border-2 border-amber-500 p-4 rounded-2xl text-left cursor-pointer transition";
-const btn = document.getElementById('btn-confirm-school');
-btn.disabled = false;
-btn.classList.remove('opacity-50', 'cursor-not-allowed');
-};
-card.innerHTML = ⁠<div class="font-bold text-base text-amber-400 mb-1">🏫 ${sch.name}</div> <div class="text-xs text-slate-300">${sch.bonusText}</div>⁠;
-grid.appendChild(card);
-});
-}
-function confirmSchoolSelection() {
-if (!selectedSchoolTemp) return;
-player.school = selectedSchoolTemp.name;
-if (player.position === 'pitcher') {
-const ageLimit = getAgeSpeedLimit(player.age);
-player.stat1 = Math.min(ageLimit, player.stat1 + selectedSchoolTemp.statBonus);
-} else {
-player.stat1 += selectedSchoolTemp.statBonus;
-}
-player.stat2 += selectedSchoolTemp.statBonus;
-player.stat4 += selectedSchoolTemp.statBonus;
-document.getElementById('screen-school-select').classList.add('hidden');
-document.getElementById('screen-dashboard').classList.remove('hidden');
-logActivity(⁠🎓 ${player.school} 야구부에 진학했습니다! 입단 보너스 스탯 획득.⁠);
-updateUI();
-}
-function triggerDraftEvent() {
-document.getElementById('screen-dashboard').classList.add('hidden');
-document.getElementById('screen-draft').classList.remove('hidden');
-const totalStat = player.stat1 + player.stat2;
-const teams = ["KIA 타이거즈", "삼성 라이온즈", "LG 트윈스", "두산 베어스", "KT 위즈", "SSG 랜더스", "롯데 자이언츠", "한화 이글스", "NC 다이노스", "키움 히어로즈"];
-let team = teams[Math.floor(Math.random() * teams.length)];
-let round = "1라운드 1순위 전체 지명!";
-let bonus = 50;
-if (totalStat > 140) {
-round = "1라운드 1순위 전체 지명!";
-bonus = 100;
-} else if (totalStat > 100) {
-round = "2라운드 상위 지명";
-bonus = 50;
-} else {
-round = "육성선수 입단";
-bonus = 20;
-}
-player.isPro = true;
-player.proTeam = team;
-player.school = ⁠${team} (프로)⁠;
-player.money = bonus;
-document.getElementById('draft-result-box').innerHTML = ⁠<div class="text-xs font-bold text-emerald-400 uppercase tracking-widest">드래프트 지명 결과</div> <div class="title-font text-2xl text-amber-400 my-2">${team}</div> <div class="text-sm font-bold text-white">${round}</div> <div class="text-xs text-slate-400 mt-2">입단 계약금: <span class="text-emerald-400 font-bold">${bonus} 억원</span></div>⁠;
-}
-function finishDraft() {
-document.getElementById('screen-draft').classList.add('hidden');
-document.getElementById('screen-dashboard').classList.remove('hidden');
-logActivity(⁠🏛️ ${player.proTeam} 입단! 본격적인 프로 페넌트레이스에 돌입합니다.⁠);
-updateUI();
-}
-function openTrophyModal() {
-const modal = document.getElementById('modal-trophy');
-const grid = document.getElementById('trophy-list-grid');
-grid.innerHTML = '';
-if (player.trophies.length === 0) {
-grid.innerHTML = ⁠<div class="col-span-2 text-slate-500 py-6 text-center text-xs">획득한 명예 훈장이 없습니다. 미니게임 챌린지에서 승리하세요!</div>⁠;
-} else {
-player.trophies.forEach(t => {
-const div = document.createElement('div');
-div.className = "bg-slate-950 border border-amber-500/30 p-3 rounded-xl flex items-center justify-between";
-div.innerHTML = ⁠<span class="font-bold text-amber-300 text-xs">${t}</span> <span class="text-[10px] text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded-full">획득</span>⁠;
-grid.appendChild(div);
-});
-}
-modal.classList.remove('hidden');
-}
-function closeTrophyModal() {
-document.getElementById('modal-trophy').classList.add('hidden');
-}
-function confirmVoluntaryRetire() {
-const btn = document.getElementById('btn-voluntary-retire');
-if (btn.dataset.confirmed !== 'true') {
-btn.dataset.confirmed = 'true';
-btn.innerText = "⚠️ 정말 은퇴하시겠습니까? (한 번 더 클릭 시 확정)";
-setTimeout(() => {
-if (btn) {
-btn.dataset.confirmed = 'false';
-btn.innerText = "🚨 현역 선수 자진 은퇴 선언하기";
-}
-}, 4000);
-return;
-}
-triggerEnding();
-}
-function triggerEnding() {
-document.getElementById('screen-dashboard').classList.add('hidden');
-document.getElementById('screen-ending').classList.remove('hidden');
-const isLegend = (player.stat1 + player.stat2 + player.stat4) >= 220 || player.trophies.length >= 2;
-document.getElementById('ending-icon').innerText = isLegend ? "👑" : "⚾";
-document.getElementById('ending-title').innerText = isLegend ? "전설의 명예의 전당 헌액" : "박수받으며 떠나는 베테랑 은퇴";
-document.getElementById('ending-subtitle').innerText = ⁠${player.name} 선수의 위대한 커리어 결산⁠;
-const grid = document.getElementById('ending-stats-grid');
-if (player.position === 'batter') {
-const avg = player.atBats > 0 ? (player.hits / player.atBats).toFixed(3) : ".000";
-grid.innerHTML = ⁠<div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">은퇴 나이</span><span class="font-bold text-amber-400 text-sm">${player.age}세</span></div> <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">통산 타율</span><span class="font-bold text-cyan-400 text-sm">${avg}</span></div> <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">통산 안타 / 홈런</span><span class="font-bold text-emerald-400 text-sm">${player.hits}안타 / ${player.homeRuns}홈런</span></div> <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">획득 트로피</span><span class="font-bold text-purple-400 text-sm">${player.trophies.length}개</span></div>⁠;
-} else {
-const era = player.inningsPitched > 0 ? ((player.earnedRuns * 9) / player.inningsPitched).toFixed(2) : "0.00";
-grid.innerHTML = ⁠<div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">은퇴 나이</span><span class="font-bold text-amber-400 text-sm">${player.age}세</span></div> <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">통산 방어율</span><span class="font-bold text-cyan-400 text-sm">${era}</span></div> <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">통산 승리 / 탈삼진</span><span class="font-bold text-emerald-400 text-sm">${player.wins}승 / ${player.strikeOuts}K</span></div> <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">획득 트로피</span><span class="font-bold text-purple-400 text-sm">${player.trophies.length}개</span></div>⁠;
-}
-document.getElementById('ending-story-text').innerText = isLegend
-? ⁠${player.name} 선수는 유소년 시절부터 철저한 자기관리와 뛰어난 야구 지능으로 시대를 지배했습니다. 영구결번과 함께 KBO 명예의 전당에 영원히 이름을 남깁니다.⁠
-: ⁠${player.name} 선수는 그라운드 위에서 언제나 최선을 다하는 플레이로 팬들의 뜨거운 박수를 받으며 화려한 선수 생활의 마침표를 찍었습니다.⁠;
-}
-function selectMiniOption(type) {
-selectedOptionType = type;
-document.querySelectorAll('#pitch-selector-buttons button').forEach(b => {
-b.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-slate-300 transition";
-});
-const activeBtn = document.getElementById(⁠opt-btn-${type}⁠);
-if (activeBtn) {
-activeBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 border border-amber-400 shadow transition";
-}
-}
-function startMatchGame() {
-if (player.stamina < 20) {
-logActivity('⚠️ 체력이 부족하여 경기에 출전할 수 없습니다. 휴식을 취하세요!');
-return;
-}
-player.stamina -= 20;
-document.getElementById('screen-dashboard').classList.add('hidden');
-document.getElementById('screen-minigame').classList.remove('hidden');
-ballsRemaining = 5;
-comboCount = 0;
-miniGameActive = true;
-isPitchAnimating = false;
-setupMiniGameControls();
-renderStaticField();
-document.getElementById('game-score-badge').innerText = ⁠COMBO ${comboCount} | 남은 승부: ${ballsRemaining}⁠;
-document.getElementById('game-overlay-msg').classList.add('hidden');
-document.getElementById('strike-zone-overlay').classList.remove('hidden');
-}
-function setupMiniGameControls() {
-const btnContainer = document.getElementById('pitch-selector-buttons');
-const label = document.getElementById('control-bar-label');
-const guideText = document.getElementById('zone-guide-text');
-btnContainer.innerHTML = '';
-if (player.position === 'pitcher') {
-document.getElementById('game-title-text').innerText = "9회말 1사 만루 위기 탈출!";
-document.getElementById('game-sub-text').innerText = "구종과 코스를 조합해 타자를 제압하세요.";
-label.innerText = "1. 구종 선택:";
-guideText.innerText = "2. 던질 스트라이크 존 코스를 선택하세요!";
-const pitches = [
-{ id: 'fastball', label: '🔥 강속구' },
-{ id: 'slider', label: '🌀 슬라이더' },
-{ id: 'curve', label: '⚾ 낙차 커브' }
-];
-selectedOptionType = 'fastball';
-pitches.forEach((p, idx) => {
-const btn = document.createElement('button');
-btn.type = 'button';
-btn.id = ⁠opt-btn-${p.id}⁠;
-btn.innerText = p.label;
-btn.onclick = () => selectMiniOption(p.id);
-btn.className = idx === 0
-? "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 border border-amber-400 shadow transition"
-: "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-slate-300 transition";
-btnContainer.appendChild(btn);
-});
-} else {
-document.getElementById('game-title-text').innerText = "9회말 2아웃 만루 역전 찬스!";
-document.getElementById('game-sub-text').innerText = "투수의 코스를 예측해 방망이를 돌리세요.";
-label.innerText = "1. 스윙 스타일:";
-guideText.innerText = "2. 노릴 스트라이크 존 코스를 클릭하세요!";
-const swings = [
-{ id: 'power', label: '💥 풀스윙 (홈런 노림)' },
-{ id: 'contact', label: '🎯 컨택 스윙 (정교한 타격)' }
-];
-selectedOptionType = 'power';
-swings.forEach((s, idx) => {
-const btn = document.createElement('button');
-btn.type = 'button';
-btn.id = ⁠opt-btn-${s.id}⁠;
-btn.innerText = s.label;
-btn.onclick = () => selectMiniOption(s.id);
-btn.className = idx === 0
-? "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 border border-amber-400 shadow transition"
-: "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-slate-300 transition";
-btnContainer.appendChild(btn);
-});
-}
-const zoneGrid = document.getElementById('zone-grid-buttons');
-zoneGrid.innerHTML = '';
-for (let i = 0; i < 9; i++) {
-const isCorner = [0, 2, 6, 8].includes(i);
-const isCenter = i === 4;
-const cell = document.createElement('button');
-cell.type = 'button';
-cell.className = ⁠rounded-xl border flex flex-col items-center justify-center p-1 transition transform active:scale-95 ${ isCenter ? 'bg-red-500/25 hover:bg-red-500/45 border-red-400/60 text-red-200' : isCorner ? 'bg-cyan-500/20 hover:bg-cyan-500/40 border-cyan-400/60 text-cyan-200' : 'bg-slate-800/60 hover:bg-amber-500/30 border-slate-600/60 text-slate-200' }⁠;
-cell.innerHTML = ⁠<span class="text-[10px] font-black leading-tight text-center">${zoneNames[i].replace(' ', '<br>')}</span> <span class="text-[9px] opacity-75 mt-0.5">${isCorner ? '코너워크' : isCenter ? '한가운데' : '보더라인'}</span>⁠;
-cell.onclick = () => executeZonePlay(i);
-zoneGrid.appendChild(cell);
-}
-}
-function renderStaticField() {
-const canvas = document.getElementById('gameCanvas');
-if (!canvas) return;
-const ctx = canvas.getContext('2d');
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-grad.addColorStop(0, "#022c22");
-grad.addColorStop(1, "#064e3b");
-ctx.fillStyle = grad;
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-ctx.beginPath();
-ctx.moveTo(320, 120);
-ctx.lineTo(500, 270);
-ctx.lineTo(320, 410);
-ctx.lineTo(140, 270);
-ctx.closePath();
-ctx.fillStyle = "#78350f";
-ctx.fill();
-ctx.beginPath();
-ctx.arc(320, 260, 24, 0, Math.PI * 2);
-ctx.fillStyle = "#92400e";
-ctx.fill();
-ctx.fillStyle = "#ffffff";
-ctx.fillRect(310, 258, 20, 4);
-}
-function executeZonePlay(zoneIndex) {
-if (!miniGameActive || isPitchAnimating) return;
-isPitchAnimating = true;
-document.getElementById('strike-zone-overlay').classList.add('hidden');
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const col = zoneIndex % 3;
-const row = Math.floor(zoneIndex / 3);
-const targetX = 240 + col * 80;
-const targetY = 210 + row * 65;
-let progress = 0;
-const totalFrames = 28;
-function animatePitch() {
-renderStaticField();
-ctx.strokeStyle = "rgba(251, 191, 36, 0.5)";
-ctx.lineWidth = 3;
-ctx.strokeRect(200, 175, 240, 195);
-progress++;
-const t = progress / totalFrames;
-let curveOffsetX = 0;
-let curveOffsetY = 0;
-if (selectedOptionType === 'slider') {
-curveOffsetX = Math.sin(t * Math.PI) * 55;
-} else if (selectedOptionType === 'curve') {
-curveOffsetY = -Math.sin(t * Math.PI) * 65;
-}
-const curX = 320 + (targetX - 320) * t + curveOffsetX;
-const curY = 95 + (targetY - 95) * t + curveOffsetY;
-const radius = 6 + t * 12;
-ctx.beginPath();
-ctx.arc(curX, curY, radius + 4, 0, Math.PI * 2);
-ctx.fillStyle = selectedOptionType === 'fastball' ? "rgba(239, 68, 68, 0.35)" : "rgba(56, 189, 248, 0.35)";
-ctx.fill();
-ctx.beginPath();
-ctx.arc(curX, curY, radius, 0, Math.PI * 2);
-ctx.fillStyle = "#ffffff";
-ctx.fill();
-if (progress < totalFrames) {
-animId = requestAnimationFrame(animatePitch);
-} else {
-resolveZoneOutcome(zoneIndex);
-}
-}
-animId = requestAnimationFrame(animatePitch);
-}
-function resolveZoneOutcome(zoneIndex) {
-isPitchAnimating = false;
-const isCorner = [0, 2, 6, 8].includes(zoneIndex);
-const isCenter = zoneIndex === 4;
-const aiGuessZone = Math.floor(Math.random() * 9);
-if (player.position === 'pitcher') {
-let successChance = 0.55 + (player.stat2 + player.stat4) * 0.002;
-if (isCorner) successChance += 0.18;
-if (isCenter) successChance -= 0.25;
-if (zoneIndex === aiGuessZone) successChance -= 0.15;
-const roll = Math.random();
-if (roll < successChance * 0.65) {
-comboCount++;
-player.strikeOuts++;
-player.inningsPitched += 1;
-if (!player.trophies.includes("⚡ 닥터 K 훈장")) player.trophies.push("⚡ 닥터 K 훈장");
-playSound('homerun');
-playSound('cheer');
-showMiniGameResult("⚡ 헛스윙 삼진 (K)!", ⁠[${zoneNames[zoneIndex]}] 코스로 꽂힌 결정구에 타자가 얼어붙었습니다!⁠, true);
-} else if (roll < successChance) {
-comboCount++;
-player.inningsPitched += 1;
-playSound('hit');
-showMiniGameResult("⚾ 내야 땅볼 범타 처리!", ⁠[${zoneNames[zoneIndex]}] 공략으로 타자의 배트를 밀어냈습니다!⁠, true);
-} else {
-comboCount = 0;
-player.inningsPitched += 1;
-player.earnedRuns += 1;
-playSound('out');
-showMiniGameResult("⚠️ 적시타 허용!", isCenter ? "한가운데 몰린 실투를 타자가 놓치지 않았습니다!" : "타자가 노림수를 가지고 정확히 받아쳤습니다.", false);
-}
-} else {
-const zoneDistance = Math.abs((zoneIndex % 3) - (aiGuessZone % 3)) + Math.abs(Math.floor(zoneIndex / 3) - Math.floor(aiGuessZone / 3));
-let hitChance = 0.45 + (player.stat2 + player.stat4) * 0.0025;
-if (zoneDistance === 0) hitChance += 0.35;
-else if (zoneDistance === 1) hitChance += 0.15;
-if (selectedOptionType === 'contact') hitChance += 0.12;
-const roll = Math.random();
-if (roll < hitChance) {
-const hrThreshold = selectedOptionType === 'power' ? 0.55 : 0.22;
-if (Math.random() < hrThreshold || zoneDistance === 0) {
-comboCount++;
-player.hits++;
-player.homeRuns++;
-player.atBats++;
-if (!player.trophies.includes("💥 끝내기 홈런 훈장")) player.trophies.push("💥 끝내기 홈런 훈장");
-playSound('homerun');
-playSound('cheer');
-showMiniGameResult("🚀 역전 만루 홈런!!", ⁠[${zoneNames[zoneIndex]}] 노림수 완벽 적중! 타구가 담장을 훌쩍 넘어갑니다!⁠, true);
-} else {
-comboCount++;
-player.hits++;
-player.atBats++;
-playSound('hit');
-showMiniGameResult("⚾ 싹쓸이 2루타!", ⁠[${zoneNames[zoneIndex]}] 코스를 결대로 밀어쳐 적시타를 기록했습니다!⁠, true);
-}
-} else {
-comboCount = 0;
-player.atBats++;
-playSound('out');
-showMiniGameResult("💨 범타 / 헛스윙 아웃!", ⁠투수가 [${zoneNames[aiGuessZone]}] 코스로 허를 찔렀습니다.⁠, false);
-}
-}
-}
-function showMiniGameResult(title, subText, isSuccess) {
-miniGameActive = false;
-cancelAnimationFrame(animId);
-const overlay = document.getElementById('game-overlay-msg');
-document.getElementById('overlay-title').innerText = title;
-document.getElementById('overlay-sub').innerText = subText;
-const rewardBadge = document.getElementById('overlay-reward-badge');
-if (isSuccess) {
-player.money += player.isPro ? 2 : 10;
-player.popularity += 3;
-if (player.position === 'pitcher') {
-const ageLimit = getAgeSpeedLimit(player.age);
-if (player.stat1 < ageLimit) player.stat1 += 1;
-else player.stat4 += 2;
-} else {
-player.stat1 += 1;
-}
-player.stat4 += 1;
-rewardBadge.innerText = ⁠🎁 승리 보상: 능력치 & 멘탈 상승 | 인기도 +3⁠;
-} else {
-rewardBadge.innerText = "❌ 아쉬운 결과: 다음 승부를 준비하세요.";
-}
-overlay.classList.remove('hidden');
-}
-function nextBall() {
-ballsRemaining--;
-if (ballsRemaining <= 0) {
-document.getElementById('screen-minigame').classList.add('hidden');
-document.getElementById('screen-dashboard').classList.remove('hidden');
-logActivity(⁠🔥 경기 출전을 마쳤습니다.⁠);
-advanceTurn();
-} else {
-document.getElementById('game-score-badge').innerText = ⁠COMBO ${comboCount} | 남은 승부: ${ballsRemaining}⁠;
-document.getElementById('game-overlay-msg').classList.add('hidden');
-document.getElementById('strike-zone-overlay').classList.remove('hidden');
-miniGameActive = true;
-isPitchAnimating = false;
-renderStaticField();
-}
-}
-window.onload = function() {
-renderStyleOptions();
-};
-</script>
+
+    <!-- GAME CONTAINER -->
+    <div id="game-container" class="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden min-h-[680px] flex flex-col relative">
+        
+        <!-- HEADER / STATUS BAR (Global) -->
+        <header id="global-header" class="bg-slate-950 border-b border-slate-800 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">⚾</span>
+                <div>
+                    <h1 class="title-font text-xl text-amber-400 leading-none" id="header-name">선수 이름</h1>
+                    <span class="text-xs text-slate-400" id="header-status">10세 / 리틀야구단</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4 text-xs sm:text-sm">
+                <div class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
+                    <span class="text-slate-400">포지션:</span>
+                    <span class="font-bold text-amber-400 ml-1" id="header-pos">타자</span>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
+                    <span class="text-slate-400">소속:</span>
+                    <span class="font-bold text-cyan-400 ml-1" id="header-tier">꿈나무 리틀야구단</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 p-4 sm:p-6 flex flex-col justify-center">
+
+            <!-- SCREEN 1: CHARACTER CREATION -->
+            <section id="screen-create" class="flex flex-col items-center text-center space-y-6 max-w-lg mx-auto w-full py-4">
+                <div>
+                    <h2 class="title-font text-3xl sm:text-4xl text-amber-400 mb-2">야구 커리어 시뮬레이터</h2>
+                    <p class="text-slate-400 text-sm">10세 유소년 야구단부터 전설의 명예의 전당까지, 당신의 야구 인생을 만들어가세요.</p>
+                </div>
+
+                <div class="w-full space-y-4 bg-slate-950/60 p-5 rounded-2xl border border-slate-800/80">
+                    <div>
+                        <label class="block text-left text-xs font-bold text-slate-300 mb-1">선수 이름</label>
+                        <input type="text" id="input-name" value="강타자" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white font-bold text-center focus:outline-none focus:border-amber-500">
+                    </div>
+
+                    <!-- Position Selection -->
+                    <div>
+                        <label class="block text-left text-xs font-bold text-slate-300 mb-2">주 포지션 선택</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" onclick="selectPosition('batter')" id="pos-batter" class="pos-btn border-2 border-amber-500 bg-amber-500/10 p-4 rounded-xl flex flex-col items-center transition cursor-pointer">
+                                <span class="text-3xl mb-1">🏏</span>
+                                <span class="font-bold text-sm text-amber-400">타자 (Batter)</span>
+                                <span class="text-[10px] text-slate-400 mt-1">3x3 코스 노림수 미니게임</span>
+                            </button>
+                            <button type="button" onclick="selectPosition('pitcher')" id="pos-pitcher" class="pos-btn border-2 border-slate-800 bg-slate-950 p-4 rounded-xl flex flex-col items-center transition cursor-pointer">
+                                <span class="text-3xl mb-1">⚾</span>
+                                <span class="font-bold text-sm text-slate-300">투수 (Pitcher)</span>
+                                <span class="text-[10px] text-slate-400 mt-1">구종 & 코스 조합 피칭</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Style Selection -->
+                    <div>
+                        <label class="block text-left text-xs font-bold text-slate-300 mb-2">유소년 재능 스타일</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="style-options-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="title-font text-lg sm:text-xl px-10 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 rounded-2xl shadow-lg transform active:scale-95 transition cursor-pointer">
+                    10세 리틀 야구단 입단하기 🚀
+                </button>
+            </section>
+
+            <!-- SCREEN 2: MAIN DASHBOARD -->
+            <section id="screen-dashboard" class="hidden space-y-6">
+                <!-- Top Counters Bar -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 text-center">
+                        <div class="text-[11px] text-slate-400 font-bold">현재 나이</div>
+                        <div class="title-font text-2xl text-amber-400" id="counter-age">10 세</div>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 text-center">
+                        <div class="text-[11px] text-slate-400 font-bold">자산 (용돈/연봉)</div>
+                        <div class="title-font text-2xl text-emerald-400" id="counter-money">5 만원</div>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 text-center">
+                        <div class="text-[11px] text-slate-400 font-bold">팬 인기도</div>
+                        <div class="title-font text-2xl text-purple-400" id="counter-pop">10</div>
+                    </div>
+                </div>
+
+                <!-- RIVAL STATUS & SKILLS BAR -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="bg-slate-950/90 p-3 rounded-2xl border border-red-900/40 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">🔥</span>
+                            <div>
+                                <div class="text-[10px] text-red-400 font-bold uppercase">숙적 라이벌 (최마구)</div>
+                                <div class="text-xs font-bold text-slate-200" id="rival-status-text">라이벌 스탯: 25 / 25</div>
+                            </div>
+                        </div>
+                        <span id="rival-win-badge" class="text-[10px] bg-red-950 text-red-400 border border-red-800 px-2.5 py-1 rounded-full font-bold">라이벌 리드 중</span>
+                    </div>
+
+                    <div class="bg-slate-950/90 p-3 rounded-2xl border border-amber-900/40 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">🏅</span>
+                            <div>
+                                <div class="text-[10px] text-amber-400 font-bold uppercase">장착한 특수 뱃지 / 스킬</div>
+                                <div class="text-xs font-bold text-slate-200 truncate max-w-[200px]" id="equipped-skills-text">보유 스킬 없음</div>
+                            </div>
+                        </div>
+                        <button onclick="openTrophyModal()" id="trophy-count-badge" class="text-[10px] bg-amber-950 hover:bg-amber-900 text-amber-400 border border-amber-800 px-2.5 py-1 rounded-full font-bold transition cursor-pointer">
+                            🏆 0개 (보관함)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Central Status & Stats Layout -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Stat Card 1 -->
+                    <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <span class="font-bold text-xs text-slate-300">선수 피지컬 & 능력치</span>
+                            <span class="text-xs font-bold text-cyan-400" id="dash-stage-text">유소년</span>
+                        </div>
+                        
+                        <div class="space-y-2 text-xs">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-slate-400" id="stat1-label">파워</span>
+                                    <span class="font-bold text-amber-400" id="stat1-val">20</span>
+                                </div>
+                                <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                                    <div id="stat1-bar" class="bg-amber-500 h-full w-1/5 transition-all duration-300"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-slate-400" id="stat2-label">컨택</span>
+                                    <span class="font-bold text-cyan-400" id="stat2-val">20</span>
+                                </div>
+                                <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                                    <div id="stat2-bar" class="bg-cyan-500 h-full w-1/5 transition-all duration-300"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-slate-400" id="stat3-label">주력</span>
+                                    <span class="font-bold text-purple-400" id="stat3-val">20</span>
+                                </div>
+                                <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                                    <div id="stat3-bar" class="bg-purple-500 h-full w-1/5 transition-all duration-300"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-slate-400" id="stat4-label">선구안 / 멘탈</span>
+                                    <span class="font-bold text-emerald-400" id="stat4-val">20</span>
+                                </div>
+                                <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                                    <div id="stat4-bar" class="bg-emerald-500 h-full w-1/5 transition-all duration-300"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stat Card 2: Stamina & Age Stage -->
+                    <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
+                                <span class="font-bold text-xs text-slate-300">컨디션 & 피로도</span>
+                                <span class="text-[10px] text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-800" id="stat-aging-status">유소년 성장기</span>
+                            </div>
+                            
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-slate-400">현재 체력</span>
+                                    <span class="font-bold text-emerald-400" id="stat-stamina-val">100 / 100</span>
+                                </div>
+                                <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden p-0.5">
+                                    <div id="stat-stamina-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full w-full transition-all duration-300"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-900 flex justify-between items-center text-xs">
+                            <span class="text-slate-400">소속 리그:</span>
+                            <span class="font-bold text-slate-200" id="stat-league-name">유소년 리틀리그</span>
+                        </div>
+                    </div>
+
+                    <!-- Career Record Overview -->
+                    <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <span class="font-bold text-xs text-slate-300">통산 경기 성적</span>
+                            <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full font-bold" id="season-turn-badge">10세 1분기</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2 text-center pt-1">
+                            <div class="bg-slate-900 p-2 rounded-xl">
+                                <div class="text-[10px] text-slate-400" id="rec-label-1">통산 타율</div>
+                                <div class="font-bold text-base text-amber-400" id="record-avg">.000</div>
+                            </div>
+                            <div class="bg-slate-900 p-2 rounded-xl">
+                                <div class="text-[10px] text-slate-400" id="rec-label-2">안타 / 홈런</div>
+                                <div class="font-bold text-base text-cyan-400" id="record-hits-hr">0 / 0</div>
+                            </div>
+                        </div>
+
+                        <div class="text-xs flex justify-between items-center pt-1 text-slate-400">
+                            <span>계약금 / 연봉:</span>
+                            <span class="font-bold text-emerald-400" id="record-salary">5 만원</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OFFERS & SHOP SECTION -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Inbox: Offers & Notifications -->
+                    <div class="bg-slate-950/90 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">📩</span>
+                                <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">이적 & 스카우트 수신함</h3>
+                            </div>
+                            <span id="offer-count-badge" class="text-[10px] bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full font-bold">0건</span>
+                        </div>
+                        <div id="inbox-offers-list" class="space-y-2 max-h-36 overflow-y-auto text-xs pr-1">
+                            <div class="text-slate-500 text-center py-4 text-[11px]">도착한 제안이나 차출 소식이 없습니다.</div>
+                        </div>
+                    </div>
+
+                    <!-- Career Shop -->
+                    <div class="bg-slate-950/90 p-4 rounded-2xl border border-slate-800">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">🛍️</span>
+                                <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">자산 상점 & 장비 구매</h3>
+                            </div>
+                            <span class="text-[10px] text-emerald-400 font-bold" id="shop-money-display">자산: 5만원</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <button onclick="buyItem('gear')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-2.5 rounded-xl text-left transition cursor-pointer">
+                                <div class="font-bold text-amber-400">⚾ 명품 장비 세트</div>
+                                <div class="text-[9px] text-slate-400 mt-0.5">능력치 +5 | 비용 <span id="shop-cost-gear">10만원</span></div>
+                            </button>
+                            <button onclick="buyItem('tonic')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-2.5 rounded-xl text-left transition cursor-pointer">
+                                <div class="font-bold text-emerald-400">🧪 산삼 특약 보약</div>
+                                <div class="text-[9px] text-slate-400 mt-0.5">체력 100% 회복 | 비용 <span id="shop-cost-tonic">5만원</span></div>
+                            </button>
+                            <button onclick="buySkill('clutch')" class="bg-slate-900 hover:bg-slate-800 border border-amber-900/50 p-2.5 rounded-xl text-left transition cursor-pointer">
+                                <div class="font-bold text-amber-300">🔥 [스킬] 해결사 (Clutch)</div>
+                                <div class="text-[9px] text-slate-400 mt-0.5">득점권 타율/승률 +15% | 비용 <span id="shop-cost-skill1">20만원</span></div>
+                            </button>
+                            <button onclick="buySkill('king')" class="bg-slate-900 hover:bg-slate-800 border border-purple-900/50 p-2.5 rounded-xl text-left transition cursor-pointer">
+                                <div class="font-bold text-purple-300">👑 [스킬] 구장 지배자</div>
+                                <div class="text-[9px] text-slate-400 mt-0.5">홈런/탈삼진 확률 대폭증가 | 비용 <span id="shop-cost-skill2">30만원</span></div>
+                            </button>
+                            <button onclick="buySkill('iron')" class="bg-slate-900 hover:bg-slate-800 border border-teal-900/50 p-2.5 rounded-xl text-left transition col-span-2 cursor-pointer">
+                                <div class="font-bold text-teal-300">🛡️ [스킬] 강인한 체력 (Iron Wall)</div>
+                                <div class="text-[9px] text-slate-400 mt-0.5">모든 훈련 및 경기 체력 소모 20% 감소 패시브 | 비용 <span id="shop-cost-skill3">25만원</span></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Hub Buttons -->
+                <div class="bg-slate-950/90 p-4 rounded-2xl border border-slate-800">
+                    <h3 class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">주요 진행 및 활동 선택</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <button onclick="doAction('train1')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-left transition flex flex-col justify-between group cursor-pointer">
+                            <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🏋️‍♂️</span>
+                            <div>
+                                <div class="font-bold text-xs text-amber-400" id="btn-train1-title">피지컬 훈련</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">체력 -15 | 능력치 상승</div>
+                            </div>
+                        </button>
+                        
+                        <button onclick="doAction('train2')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-left transition flex flex-col justify-between group cursor-pointer">
+                            <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🎯</span>
+                            <div>
+                                <div class="font-bold text-xs text-cyan-400" id="btn-train2-title">기술 연마</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">체력 -15 | 기술 상승</div>
+                            </div>
+                        </button>
+
+                        <button onclick="doAction('rest')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-left transition flex flex-col justify-between group cursor-pointer">
+                            <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🛌</span>
+                            <div>
+                                <div class="font-bold text-xs text-emerald-400">휴식 & 영양 관리</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">체력 +45 회복</div>
+                            </div>
+                        </button>
+
+                        <button onclick="doAction('event')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-left transition flex flex-col justify-between group cursor-pointer">
+                            <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🌟</span>
+                            <div>
+                                <div class="font-bold text-xs text-purple-400">대외 활동 / 미디어</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">인기도 / 용돈 획득</div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Aging Curve Overcome Special Action -->
+                    <div id="aging-overcome-box" class="hidden mt-3 p-3 bg-red-950/40 border border-red-500/30 rounded-xl">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-red-400">⚡ 에이징 커브 극복 케어</span>
+                            <span class="text-[10px] text-slate-400">노화 억제 & 스탯 재상승</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="doAgingAction('clinic')" class="bg-red-900/40 hover:bg-red-800/60 border border-red-700/50 p-2 rounded-lg text-left text-xs transition cursor-pointer">
+                                <div class="font-bold text-red-300">💉 해외 특수 클리닉</div>
+                                <div class="text-[9px] text-slate-400">비용 50억 | 에이징 스탯 감소 회복</div>
+                            </button>
+                            <button onclick="doAgingAction('form')" class="bg-amber-900/40 hover:bg-amber-800/60 border border-amber-700/50 p-2 rounded-lg text-left text-xs transition cursor-pointer">
+                                <div class="font-bold text-amber-300">🔬 폼 개조 (메카닉스)</div>
+                                <div class="text-[9px] text-slate-400">체력 -30 | 기술 스탯 +6 보너스</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Highlighted Play Game & Auto-Simulation Buttons -->
+                    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <button onclick="startMatchGame()" class="py-3.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 rounded-xl font-bold title-font text-base text-white shadow-lg flex items-center justify-center gap-2 transform active:scale-98 transition cursor-pointer">
+                            <span>⚾ 경기 출전 (미니게임)</span>
+                            <span class="text-[10px] font-normal bg-black/30 px-1.5 py-0.5 rounded text-emerald-200">체력 -20</span>
+                        </button>
+
+                        <button onclick="simQuickMatch()" class="py-3.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl font-bold title-font text-base text-cyan-400 shadow flex items-center justify-center gap-2 transform active:scale-98 transition cursor-pointer">
+                            <span>⚡ 빠른 경기 시뮬레이션</span>
+                            <span class="text-[10px] font-normal bg-black/30 px-1.5 py-0.5 rounded text-cyan-200">자동 진행</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Voluntary Retire Button -->
+                <div class="text-right">
+                    <button id="btn-voluntary-retire" onclick="confirmVoluntaryRetire()" class="hidden text-xs text-red-400 hover:underline cursor-pointer">
+                        🚨 현역 선수 자진 은퇴 선언하기
+                    </button>
+                </div>
+
+                <!-- Career Activity Logs -->
+                <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 h-32 overflow-y-auto text-xs space-y-1" id="activity-log">
+                    <!-- Logs populated via JS -->
+                </div>
+            </section>
+
+            <!-- SCREEN 3: SCHOOL SELECTION MODAL -->
+            <section id="screen-school-select" class="hidden flex flex-col items-center justify-center space-y-6 max-w-2xl mx-auto py-4">
+                <div class="text-center">
+                    <h2 class="title-font text-2xl sm:text-3xl text-amber-400 mb-1" id="school-select-title">진학할 명문 야구부 선택</h2>
+                    <p class="text-xs text-slate-400" id="school-select-desc">학교별 독자적인 훈련 환경과 스탯 보너스가 제공됩니다.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full" id="school-options-grid">
+                    <!-- School cards -->
+                </div>
+
+                <button id="btn-confirm-school" onclick="confirmSchoolSelection()" disabled class="opacity-50 cursor-not-allowed title-font text-lg px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-2xl shadow-lg transition">
+                    선택한 학교로 진학 확정 🎒
+                </button>
+            </section>
+
+            <!-- SCREEN 4: KBO DRAFT EVENT -->
+            <section id="screen-draft" class="hidden text-center space-y-6 max-w-md mx-auto py-6">
+                <div>
+                    <span class="text-5xl">🏛️</span>
+                    <h2 class="title-font text-3xl text-amber-400 mt-3 mb-1">KBO 신인 드래프트</h2>
+                    <p class="text-xs text-slate-400">고등학교 시절의 성적과 능력치에 따라 프로 지명이 결정됩니다.</p>
+                </div>
+
+                <div id="draft-result-box" class="bg-slate-950 border border-slate-800 p-6 rounded-2xl space-y-3">
+                    <!-- Dynamic Draft Result -->
+                </div>
+
+                <button onclick="finishDraft()" class="title-font text-lg px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl shadow-lg hover:from-emerald-400 hover:to-teal-500 transition cursor-pointer">
+                    프로 선수 생활 시작하기 ⚾
+                </button>
+            </section>
+
+            <!-- SCREEN 5: CANVAS MINI-GAME -->
+            <section id="screen-minigame" class="hidden flex flex-col items-center justify-center space-y-4">
+                <div class="flex justify-between items-center w-full max-w-lg px-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl animate-bounce">🔥</span>
+                        <div>
+                            <span class="text-xs font-bold text-amber-400" id="game-title-text">9회말 2아웃 만루 승부</span>
+                            <span class="text-[10px] text-slate-400 block" id="game-sub-text">코스와 구종을 선택하여 승부하세요!</span>
+                        </div>
+                    </div>
+                    <span class="text-xs font-bold bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full border border-amber-500/50" id="game-score-badge">COMBO 0 | 남은 승부: 5</span>
+                </div>
+
+                <!-- Pitch / Swing Style Selector -->
+                <div id="minigame-control-bar" class="w-full max-w-lg bg-slate-950 border border-slate-800 p-2 rounded-2xl flex flex-wrap justify-between items-center gap-2">
+                    <span class="text-[11px] font-bold text-slate-400 px-2" id="control-bar-label">1. 구종 선택:</span>
+                    <div id="pitch-selector-buttons" class="flex gap-1.5 flex-1 justify-end">
+                        <!-- Populated dynamically for Pitcher or Batter -->
+                    </div>
+                </div>
+
+                <!-- Canvas Element & Interactive 3x3 Strike Zone -->
+                <div class="relative border-4 border-amber-500/30 rounded-3xl overflow-hidden shadow-2xl bg-slate-950 w-full max-w-lg">
+                    <canvas id="gameCanvas" width="640" height="420" class="w-full h-auto block"></canvas>
+                    
+                    <!-- 3x3 Interactive Strike Zone Grid Overlay -->
+                    <div id="strike-zone-overlay" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto">
+                        <div class="text-[11px] font-bold text-amber-300 bg-black/70 px-3 py-1 rounded-full mb-2 border border-amber-500/40" id="zone-guide-text">
+                            2. 투구할 스트라이크 존 코스를 클릭하세요!
+                        </div>
+                        <div class="grid grid-cols-3 gap-1.5 w-48 h-48 sm:w-56 sm:h-56 p-2 bg-slate-950/60 border-2 border-amber-400/80 rounded-2xl backdrop-blur-[2px] shadow-2xl" id="zone-grid-buttons">
+                            <!-- 9 Zone Cells generated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Overlay Result Message -->
+                    <div id="game-overlay-msg" class="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center hidden space-y-3 p-4 z-25">
+                        <span class="title-font text-3xl sm:text-4xl text-amber-400 animate-bounce text-center" id="overlay-title">STRIKE OUT!!</span>
+                        <span class="text-sm font-bold text-slate-200 text-center" id="overlay-sub">완벽한 코스 공략!</span>
+                        
+                        <div id="overlay-reward-badge" class="bg-amber-500/10 border border-amber-500/40 text-amber-300 px-4 py-1.5 rounded-xl text-xs font-bold">
+                            보상 획득
+                        </div>
+
+                        <button onclick="nextBall()" class="mt-2 text-sm px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 rounded-xl font-bold title-font shadow-lg transform active:scale-95 transition cursor-pointer">
+                            다음 승부 진행 ▶
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-center text-xs text-slate-400" id="minigame-stats-brief">
+                    💡 상대의 허를 찌르는 코스를 선택할수록 성공 확률이 대폭 상승합니다!
+                </div>
+            </section>
+
+            <!-- SCREEN 6: RETIREMENT & ENDING -->
+            <section id="screen-ending" class="hidden text-center space-y-6 max-w-xl mx-auto py-6">
+                <div>
+                    <span class="text-6xl" id="ending-icon">👑</span>
+                    <h2 class="title-font text-3xl sm:text-4xl text-amber-400 mt-2" id="ending-title">전설의 명예의 전당 헌액</h2>
+                    <p class="text-xs text-slate-400 mt-1" id="ending-subtitle">위대한 야구 커리어를 마치고 선수 생활을 은퇴합니다.</p>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl text-left space-y-4">
+                    <h3 class="title-font text-base text-amber-400 border-b border-slate-800 pb-2">📜 최종 커리어 결산 리포트</h3>
+                    <div class="grid grid-cols-2 gap-3 text-xs" id="ending-stats-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div class="text-xs text-slate-300 bg-slate-900 p-4 rounded-xl leading-relaxed" id="ending-story-text">
+                        야구 팬들은 당신의 위대한 플레이를 영원히 기억할 것입니다.
+                    </div>
+                </div>
+
+                <button onclick="location.reload()" class="title-font text-lg px-10 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold rounded-2xl shadow-lg hover:from-amber-400 hover:to-orange-400 transition cursor-pointer">
+                    새로운 선수 키우기 🔄
+                </button>
+            </section>
+
+            <!-- MODAL: TROPHY COLLECTION -->
+            <div id="modal-trophy" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+                <div class="bg-slate-900 border border-amber-500/40 rounded-3xl max-w-md w-full p-6 space-y-4 text-center relative shadow-2xl">
+                    <button onclick="closeTrophyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg font-bold cursor-pointer">✕</button>
+                    <div class="flex items-center justify-center gap-2">
+                        <span class="text-3xl">🏆</span>
+                        <h3 class="title-font text-2xl text-amber-400">명예 훈장 & 트로피 보관함</h3>
+                    </div>
+                    <p class="text-xs text-slate-400">커리어 동안 획득한 수상 기록 모음입니다.</p>
+                    
+                    <div id="trophy-list-grid" class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto text-xs py-2">
+                        <!-- Dynamic Trophies -->
+                    </div>
+
+                    <button onclick="closeTrophyModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 font-bold text-xs text-slate-200 rounded-xl transition cursor-pointer">
+                        창 닫기
+                    </button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- AUDIO SYNTH & COMPLETE GAME LOGIC -->
+    <script>
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'hit') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.exponentialRampToValueAtTime(140, now + 0.2);
+                    gain.gain.setValueAtTime(1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'homerun') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.6);
+                    gain.gain.setValueAtTime(1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                } else if (type === 'cheer') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.linearRampToValueAtTime(980, now + 0.5);
+                    gain.gain.setValueAtTime(0.6, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if (type === 'out') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.setValueAtTime(130, now + 0.12);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        const MAX_PITCH_SPEED = 168;
+
+        function getAgeSpeedLimit(age) {
+            if (age <= 12) return 118;
+            if (age <= 15) return 136;
+            if (age <= 18) return 154;
+            return MAX_PITCH_SPEED;
+        }
+
+        const player = {
+            name: "강타자",
+            position: "batter",
+            style: "power",
+            age: 10,
+            quarter: 1,
+            money: 5,
+            popularity: 10,
+            stamina: 100,
+            maxStamina: 100,
+            school: "꿈나무 리틀야구단",
+            isPro: false,
+            proTeam: "",
+            
+            stat1: 20,
+            stat2: 20,
+            stat3: 20,
+            stat4: 20,
+
+            hits: 0,
+            homeRuns: 0,
+            atBats: 0,
+            wins: 0,
+            strikeOuts: 0,
+            earnedRuns: 0,
+            inningsPitched: 0,
+            gamesPlayed: 0,
+
+            rivalStat1: 25,
+            rivalStat2: 25,
+            skills: [],
+            trophies: [],
+            inbox: []
+        };
+
+        const styleTemplates = {
+            batter: [
+                { id: "power", name: "거포 슬러거형", desc: "파워 +15 | 장타력 특화", stat1: 30, stat2: 15, stat3: 15 },
+                { id: "contact", name: "천재 교타자형", desc: "컨택 +15 | 안타 확률 상승", stat1: 15, stat2: 30, stat3: 15 },
+                { id: "speed", name: "대주자 대수비형", desc: "주력 +15 | 도루/주루 우수", stat1: 15, stat2: 15, stat3: 30 }
+            ],
+            pitcher: [
+                { id: "fireballer", name: "강속구 파이어볼러", desc: "구속 112km/h 시작 | 연령별 최고구속 빠른 도달", stat1: 112, stat2: 15, stat3: 15 },
+                { id: "control", name: "칼제구 컨트롤 아티스트", desc: "제구 +15 | 코너워크 정밀도 우수", stat1: 105, stat2: 30, stat3: 15 },
+                { id: "breaking", name: "마구 변화구 마스터", desc: "변화구 +15 | 슬라이더/커브 각도 극대화", stat1: 105, stat2: 15, stat3: 30 }
+            ]
+        };
+
+        const schoolsMiddle = [
+            { name: "덕수중학교", bonusText: "전 능력치 +5", statBonus: 5 },
+            { name: "휘문중학교", bonusText: "파워/구속 +7", statBonus: 7 },
+            { name: "경남중학교", bonusText: "기술/제구 +7", statBonus: 7 },
+            { name: "광주충장중", bonusText: "체력/성장기 특화 +6", statBonus: 6 }
+        ];
+
+        const schoolsHigh = [
+            { name: "덕수고등학교", bonusText: "1라운드 드래프트 프리미엄 & 전체 +8", statBonus: 8 },
+            { name: "장충고등학교", bonusText: "강타자/구속 +10", statBonus: 10 },
+            { name: "경남고등학교", bonusText: "변화구/컨택 +10", statBonus: 10 },
+            { name: "북일고등학교", bonusText: "체력 대폭 +20", statBonus: 8 }
+        ];
+
+        let selectedSchoolTemp = null;
+        let miniGameActive = false;
+        let ballsRemaining = 5;
+        let comboCount = 0;
+        let selectedOptionType = 'fastball';
+        let isPitchAnimating = false;
+        let animId = null;
+
+        const zoneNames = [
+            "몸쪽 높은 공", "한가운데 높은 공", "바깥쪽 높은 공",
+            "몸쪽 꽉찬 공", "한가운데 실투성", "바깥쪽 꽉찬 공",
+            "몸쪽 낮은 공", "한가운데 낮은 공", "바깥쪽 낮은 공"
+        ];
+
+        function selectPosition(pos) {
+            player.position = pos;
+            document.querySelectorAll('.pos-btn').forEach(btn => {
+                btn.className = "pos-btn border-2 border-slate-800 bg-slate-950 p-4 rounded-xl flex flex-col items-center transition cursor-pointer";
+            });
+            
+            const activeBtn = document.getElementById(`pos-${pos}`);
+            if (activeBtn) {
+                activeBtn.className = "pos-btn border-2 border-amber-500 bg-amber-500/10 p-4 rounded-xl flex flex-col items-center transition cursor-pointer";
+            }
+            renderStyleOptions();
+        }
+
+        function renderStyleOptions() {
+            const grid = document.getElementById('style-options-grid');
+            grid.innerHTML = '';
+            const styles = styleTemplates[player.position];
+
+            styles.forEach((st, idx) => {
+                const isSelected = idx === 0;
+                if (isSelected) player.style = st.id;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.id = `style-btn-${st.id}`;
+                btn.className = `style-btn border p-3 rounded-xl text-left transition cursor-pointer ${isSelected ? 'border-amber-500 bg-amber-500/10' : 'border-slate-800 bg-slate-900'}`;
+                
+                const handleSelect = (e) => {
+                    if (e) e.preventDefault();
+                    player.style = st.id;
+                    document.querySelectorAll('.style-btn').forEach(b => b.className = "style-btn border border-slate-800 bg-slate-900 p-3 rounded-xl text-left transition cursor-pointer");
+                    btn.className = "style-btn border border-amber-500 bg-amber-500/10 p-3 rounded-xl text-left transition cursor-pointer";
+                };
+
+                btn.onclick = handleSelect;
+                btn.ontouchstart = handleSelect;
+
+                btn.innerHTML = `
+                    <div class="font-bold text-xs text-amber-400 mb-1">${st.name}</div>
+                    <div class="text-[10px] text-slate-400">${st.desc}</div>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById('input-name').value.trim();
+            if (nameInput) player.name = nameInput;
+
+            const selectedTpl = styleTemplates[player.position].find(s => s.id === player.style);
+            if (selectedTpl) {
+                player.stat1 = selectedTpl.stat1;
+                player.stat2 = selectedTpl.stat2;
+                player.stat3 = selectedTpl.stat3;
+            }
+
+            document.getElementById('screen-create').classList.add('hidden');
+            document.getElementById('screen-dashboard').classList.remove('hidden');
+
+            logActivity(`🎉 10세 유소년 꿈나무 야구단에 입단하였습니다! 커리어가 시작됩니다.`);
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('header-name').innerText = player.name;
+            document.getElementById('header-status').innerText = `${player.age}세 / ${player.school}`;
+            document.getElementById('header-pos').innerText = player.position === 'batter' ? '타자' : '투수';
+            document.getElementById('header-tier').innerText = player.school;
+
+            document.getElementById('counter-age').innerText = `${player.age} 세`;
+            document.getElementById('counter-money').innerText = player.isPro ? `${player.money} 억원` : `${player.money} 만원`;
+            document.getElementById('counter-pop').innerText = player.popularity;
+
+            if (player.position === 'batter') {
+                document.getElementById('stat1-label').innerText = "파워";
+                document.getElementById('stat2-label').innerText = "컨택";
+                document.getElementById('stat3-label').innerText = "주력";
+                document.getElementById('stat4-label').innerText = "선구안 / 멘탈";
+
+                document.getElementById('stat1-val').innerText = player.stat1;
+                document.getElementById('stat2-val').innerText = player.stat2;
+                document.getElementById('stat3-val').innerText = player.stat3;
+                document.getElementById('stat4-val').innerText = player.stat4;
+
+                document.getElementById('stat1-bar').style.width = `${Math.min(100, player.stat1)}%`;
+                document.getElementById('stat2-bar').style.width = `${Math.min(100, player.stat2)}%`;
+                document.getElementById('stat3-bar').style.width = `${Math.min(100, player.stat3)}%`;
+                document.getElementById('stat4-bar').style.width = `${Math.min(100, player.stat4)}%`;
+
+                document.getElementById('rec-label-1').innerText = "통산 타율";
+                const avg = player.atBats > 0 ? (player.hits / player.atBats).toFixed(3) : ".000";
+                document.getElementById('record-avg').innerText = avg.startsWith('0') ? avg.substring(1) : avg;
+
+                document.getElementById('rec-label-2').innerText = "안타 / 홈런";
+                document.getElementById('record-hits-hr').innerText = `${player.hits} / ${player.homeRuns}`;
+            } else {
+                const ageCap = getAgeSpeedLimit(player.age);
+                document.getElementById('stat1-label').innerText = `최고 구속 (한계 ${ageCap}km)`;
+                document.getElementById('stat2-label').innerText = "제구력";
+                document.getElementById('stat3-label').innerText = "변화구";
+                document.getElementById('stat4-label').innerText = "위기관리 / 운영";
+
+                document.getElementById('stat1-val').innerText = `${player.stat1} km/h`;
+                document.getElementById('stat2-val').innerText = player.stat2;
+                document.getElementById('stat3-val').innerText = player.stat3;
+                document.getElementById('stat4-val').innerText = player.stat4;
+
+                document.getElementById('stat1-bar').style.width = `${Math.min(100, ((player.stat1 - 95) / 73) * 100)}%`;
+                document.getElementById('stat2-bar').style.width = `${Math.min(100, player.stat2)}%`;
+                document.getElementById('stat3-bar').style.width = `${Math.min(100, player.stat3)}%`;
+                document.getElementById('stat4-bar').style.width = `${Math.min(100, player.stat4)}%`;
+
+                document.getElementById('rec-label-1').innerText = "방어율 (ERA)";
+                const era = player.inningsPitched > 0 ? ((player.earnedRuns * 9) / player.inningsPitched).toFixed(2) : "0.00";
+                document.getElementById('record-avg').innerText = era;
+
+                document.getElementById('rec-label-2').innerText = "승리 / 탈삼진";
+                document.getElementById('record-hits-hr').innerText = `${player.wins}승 / ${player.strikeOuts}K`;
+            }
+
+            document.getElementById('stat-stamina-val').innerText = `${player.stamina} / ${player.maxStamina}`;
+            document.getElementById('stat-stamina-bar').style.width = `${(player.stamina / player.maxStamina) * 100}%`;
+
+            document.getElementById('season-turn-badge').innerText = `${player.age}세 ${player.quarter}분기`;
+            document.getElementById('record-salary').innerText = player.isPro ? `${player.money} 억` : `${player.money} 만원`;
+
+            document.getElementById('rival-status-text').innerText = `최마구 스탯: ${player.rivalStat1} / ${player.rivalStat2}`;
+            const isAhead = (player.stat1 + player.stat2) >= (player.rivalStat1 + player.rivalStat2);
+            document.getElementById('rival-win-badge').innerText = isAhead ? "플레이어 리드!" : "라이벌 리드 중";
+            document.getElementById('rival-win-badge').className = isAhead ? "text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2.5 py-1 rounded-full font-bold" : "text-[10px] bg-red-950 text-red-400 border border-red-800 px-2.5 py-1 rounded-full font-bold";
+
+            document.getElementById('equipped-skills-text').innerText = player.skills.length > 0 ? player.skills.join(', ').toUpperCase() : "보유 스킬 없음";
+            document.getElementById('trophy-count-badge').innerText = `🏆 ${player.trophies.length}개 (보관함)`;
+            document.getElementById('shop-money-display').innerText = `자산: ${player.money}${player.isPro ? '억' : '만원'}`;
+
+            const agingBox = document.getElementById('aging-overcome-box');
+            if (player.age >= 30) {
+                agingBox.classList.remove('hidden');
+                document.getElementById('btn-voluntary-retire').classList.remove('hidden');
+            } else {
+                agingBox.classList.add('hidden');
+            }
+        }
+
+        function logActivity(text) {
+            const logBox = document.getElementById('activity-log');
+            const entry = document.createElement('div');
+            entry.className = "text-slate-300 py-0.5 border-b border-slate-900";
+            entry.innerHTML = `<span class="text-amber-400 font-bold">[${player.age}세 ${player.quarter}Q]</span> ${text}`;
+            logBox.prepend(entry);
+        }
+
+        function advanceTurn() {
+            player.quarter++;
+            if (player.quarter > 4) {
+                player.quarter = 1;
+                player.age++;
+                logActivity(`🎂 한 해가 지나 ${player.age}세가 되었습니다!`);
+
+                player.rivalStat1 += Math.floor(Math.random() * 5) + 3;
+                player.rivalStat2 += Math.floor(Math.random() * 5) + 3;
+
+                if (player.age >= 32) {
+                    player.stat1 = Math.max(10, player.stat1 - 2);
+                    player.stat2 = Math.max(10, player.stat2 - 2);
+                    logActivity(`⚠️ 노화로 인해 신체 능력치가 약간 하락했습니다.`);
+                }
+
+                if (player.age === 13) triggerSchoolChoice('middle');
+                else if (player.age === 16) triggerSchoolChoice('high');
+                else if (player.age === 18) triggerDraftEvent();
+                else if (player.age >= 40) triggerEnding();
+            }
+            updateUI();
+        }
+
+        function doAction(type) {
+            if (player.stamina < 15 && type !== 'rest') {
+                logActivity('⚠️ 체력이 부족합니다. 휴식을 취하세요!');
+                return;
+            }
+
+            const ironWallBonus = player.skills.includes('iron') ? 3 : 0;
+
+            if (type === 'train1') {
+                player.stamina -= (15 - ironWallBonus);
+                if (player.position === 'pitcher') {
+                    const ageLimit = getAgeSpeedLimit(player.age);
+                    if (player.stat1 >= ageLimit) {
+                        player.stat4 += 4;
+                        logActivity(`🛑 ${player.age}세 신체 한계 구속(${ageLimit}km/h) 도달! 대신 [위기관리/투구운영] 스탯이 +4 상승했습니다.`);
+                    } else {
+                        player.stat1 = Math.min(ageLimit, player.stat1 + 2);
+                        player.stat4 += 1;
+                        logActivity(`🏋️ 피지컬 훈련 완료! 최고 구속 ${player.stat1}km/h 달성 (위기관리 +1)`);
+                    }
+                } else {
+                    player.stat1 += 3;
+                    player.stat4 += 1;
+                    logActivity(`🏋️ 피지컬 훈련 완료! [파워] +3, [선구안/멘탈] +1`);
+                }
+            } else if (type === 'train2') {
+                player.stamina -= (15 - ironWallBonus);
+                player.stat2 += 3;
+                player.stat3 += 2;
+                player.stat4 += 2;
+                logActivity(`🎯 기술 연마 완료! [${player.position === 'batter' ? '컨택/주력/선구안' : '제구/변화구/운영'}] 고르게 상승!`);
+            } else if (type === 'rest') {
+                player.stamina = Math.min(player.maxStamina, player.stamina + 45);
+                logActivity(`🛌 충분한 휴식을 통해 체력을 회복했습니다.`);
+            } else if (type === 'event') {
+                player.stamina -= (10 - ironWallBonus);
+                player.popularity += 4;
+                player.stat4 += 2;
+                const earn = player.isPro ? 1 : 5;
+                player.money += earn;
+                logActivity(`🌟 대외 활동 및 멘탈 케어! 인기도 +4, 멘탈/운영 +2, 자산 +${earn}${player.isPro ? '억' : '만원'}`);
+            }
+
+            advanceTurn();
+        }
+
+        function simQuickMatch() {
+            if (player.stamina < 20) {
+                logActivity('⚠️ 경기를 시뮬레이션할 체력이 부족합니다!');
+                return;
+            }
+            const stamCost = player.skills.includes('iron') ? 16 : 20;
+            player.stamina -= stamCost;
+
+            if (player.position === 'batter') {
+                player.atBats += 4;
+                const hits = Math.min(4, Math.floor(Math.random() * 3));
+                player.hits += hits;
+                if (hits > 1 && Math.random() < 0.35) player.homeRuns++;
+                logActivity(`⚡ 오늘 경기 결과: 4타수 ${hits}안타 기록!`);
+            } else {
+                player.inningsPitched += 6;
+                const ks = Math.floor(Math.random() * 5) + 2;
+                player.strikeOuts += ks;
+                if (Math.random() > 0.35) player.wins++;
+                logActivity(`⚡ 오늘 투구 결과: 6이닝 ${ks}탈삼진 기록!`);
+            }
+
+            advanceTurn();
+        }
+
+        function buyItem(item) {
+            const cost = item === 'gear' ? 10 : 5;
+            if (player.money < cost) {
+                logActivity('⚠️ 구매를 위한 자산이 부족합니다!');
+                return;
+            }
+            player.money -= cost;
+            if (item === 'gear') {
+                if (player.position === 'pitcher') {
+                    const ageLimit = getAgeSpeedLimit(player.age);
+                    player.stat1 = Math.min(ageLimit, player.stat1 + 3);
+                } else {
+                    player.stat1 += 5;
+                }
+                player.stat2 += 5;
+                player.stat4 += 5;
+                logActivity(`⚾ 최고급 명품 장비 세트 구매! 기술/멘탈 능력치 대폭 상승!`);
+            } else {
+                player.stamina = player.maxStamina;
+                logActivity(`🧪 산삼 특약 보약 복용! 체력 100% 완전 회복`);
+            }
+            updateUI();
+        }
+
+        function buySkill(skillId) {
+            if (player.skills.includes(skillId)) {
+                logActivity('ℹ️ 이미 보유하고 있는 스킬입니다!');
+                return;
+            }
+            const cost = skillId === 'clutch' ? 20 : skillId === 'king' ? 30 : 25;
+            if (player.money < cost) {
+                logActivity('⚠️ 스킬 습득을 위한 자산이 부족합니다!');
+                return;
+            }
+            player.money -= cost;
+            player.skills.push(skillId);
+            logActivity(`⚡ 특수 뱃지 스킬 [${skillId.toUpperCase()}] 습득 완료!`);
+            updateUI();
+        }
+
+        function doAgingAction(act) {
+            if (act === 'clinic') {
+                if (player.money < 50) {
+                    logActivity('⚠️ 특수 클리닉 비용(50억)이 부족합니다!');
+                    return;
+                }
+                player.money -= 50;
+                player.stat1 += 5;
+                player.stat2 += 5;
+                logActivity(`💉 해외 특수 클리닉 치료를 받아 노화된 신체 감각을 회복했습니다!`);
+            } else {
+                player.stamina -= 30;
+                player.stat2 += 6;
+                logActivity(`🔬 폼 개조 연구를 통해 베테랑 기술 스탯 +6을 확보했습니다!`);
+            }
+            updateUI();
+        }
+
+        function triggerSchoolChoice(type) {
+            document.getElementById('screen-dashboard').classList.add('hidden');
+            document.getElementById('screen-school-select').classList.remove('hidden');
+
+            const grid = document.getElementById('school-options-grid');
+            grid.innerHTML = '';
+            const schools = type === 'middle' ? schoolsMiddle : schoolsHigh;
+
+            document.getElementById('school-select-title').innerText = `${type === 'middle' ? '13세 중학교' : '16세 고등학교'} 야구부 진학`;
+
+            schools.forEach(sch => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-950 border border-slate-800 p-4 rounded-2xl text-left cursor-pointer hover:border-amber-500 transition";
+                
+                const handleSchoolSelect = (e) => {
+                    if (e) e.preventDefault();
+                    selectedSchoolTemp = sch;
+                    document.querySelectorAll('#school-options-grid > div').forEach(c => c.className = "bg-slate-950 border border-slate-800 p-4 rounded-2xl text-left cursor-pointer transition");
+                    card.className = "bg-slate-950 border-2 border-amber-500 p-4 rounded-2xl text-left cursor-pointer transition";
+                    const btn = document.getElementById('btn-confirm-school');
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                };
+
+                card.onclick = handleSchoolSelect;
+                card.ontouchstart = handleSchoolSelect;
+
+                card.innerHTML = `
+                    <div class="font-bold text-base text-amber-400 mb-1">🏫 ${sch.name}</div>
+                    <div class="text-xs text-slate-300">${sch.bonusText}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function confirmSchoolSelection() {
+            if (!selectedSchoolTemp) return;
+            player.school = selectedSchoolTemp.name;
+            if (player.position === 'pitcher') {
+                const ageLimit = getAgeSpeedLimit(player.age);
+                player.stat1 = Math.min(ageLimit, player.stat1 + selectedSchoolTemp.statBonus);
+            } else {
+                player.stat1 += selectedSchoolTemp.statBonus;
+            }
+            player.stat2 += selectedSchoolTemp.statBonus;
+            player.stat4 += selectedSchoolTemp.statBonus;
+
+            document.getElementById('screen-school-select').classList.add('hidden');
+            document.getElementById('screen-dashboard').classList.remove('hidden');
+            logActivity(`🎓 ${player.school} 야구부에 진학했습니다! 입단 보너스 스탯 획득.`);
+            updateUI();
+        }
+
+        function triggerDraftEvent() {
+            document.getElementById('screen-dashboard').classList.add('hidden');
+            document.getElementById('screen-draft').classList.remove('hidden');
+
+            const totalStat = player.stat1 + player.stat2;
+            const teams = ["KIA 타이거즈", "삼성 라이온즈", "LG 트윈스", "두산 베어스", "KT 위즈", "SSG 랜더스", "롯데 자이언츠", "한화 이글스", "NC 다이노스", "키움 히어로즈"];
+            let team = teams[Math.floor(Math.random() * teams.length)];
+            let round = "1라운드 1순위 전체 지명!";
+            let bonus = 50;
+
+            if (totalStat > 140) {
+                round = "1라운드 1순위 전체 지명!";
+                bonus = 100;
+            } else if (totalStat > 100) {
+                round = "2라운드 상위 지명";
+                bonus = 50;
+            } else {
+                round = "육성선수 입단";
+                bonus = 20;
+            }
+
+            player.isPro = true;
+            player.proTeam = team;
+            player.school = `${team} (프로)`;
+            player.money = bonus;
+
+            document.getElementById('draft-result-box').innerHTML = `
+                <div class="text-xs font-bold text-emerald-400 uppercase tracking-widest">드래프트 지명 결과</div>
+                <div class="title-font text-2xl text-amber-400 my-2">${team}</div>
+                <div class="text-sm font-bold text-white">${round}</div>
+                <div class="text-xs text-slate-400 mt-2">입단 계약금: <span class="text-emerald-400 font-bold">${bonus} 억원</span></div>
+            `;
+        }
+
+        function finishDraft() {
+            document.getElementById('screen-draft').classList.add('hidden');
+            document.getElementById('screen-dashboard').classList.remove('hidden');
+            logActivity(`🏛️ ${player.proTeam} 입단! 본격적인 프로 페넌트레이스에 돌입합니다.`);
+            updateUI();
+        }
+
+        function openTrophyModal() {
+            const modal = document.getElementById('modal-trophy');
+            const grid = document.getElementById('trophy-list-grid');
+            grid.innerHTML = '';
+
+            if (player.trophies.length === 0) {
+                grid.innerHTML = `<div class="col-span-2 text-slate-500 py-6 text-center text-xs">획득한 명예 훈장이 없습니다. 미니게임 챌린지에서 승리하세요!</div>`;
+            } else {
+                player.trophies.forEach(t => {
+                    const div = document.createElement('div');
+                    div.className = "bg-slate-950 border border-amber-500/30 p-3 rounded-xl flex items-center justify-between";
+                    div.innerHTML = `
+                        <span class="font-bold text-amber-300 text-xs">${t}</span>
+                        <span class="text-[10px] text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded-full">획득</span>
+                    `;
+                    grid.appendChild(div);
+                });
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeTrophyModal() {
+            document.getElementById('modal-trophy').classList.add('hidden');
+        }
+
+        function confirmVoluntaryRetire() {
+            const btn = document.getElementById('btn-voluntary-retire');
+            if (btn.dataset.confirmed !== 'true') {
+                btn.dataset.confirmed = 'true';
+                btn.innerText = "⚠️ 정말 은퇴하시겠습니까? (한 번 더 클릭 시 확정)";
+                setTimeout(() => {
+                    if (btn) {
+                        btn.dataset.confirmed = 'false';
+                        btn.innerText = "🚨 현역 선수 자진 은퇴 선언하기";
+                    }
+                }, 4000);
+                return;
+            }
+            triggerEnding();
+        }
+
+        function triggerEnding() {
+            document.getElementById('screen-dashboard').classList.add('hidden');
+            document.getElementById('screen-ending').classList.remove('hidden');
+
+            const isLegend = (player.stat1 + player.stat2 + player.stat4) >= 220 || player.trophies.length >= 2;
+            document.getElementById('ending-icon').innerText = isLegend ? "👑" : "⚾";
+            document.getElementById('ending-title').innerText = isLegend ? "전설의 명예의 전당 헌액" : "박수받으며 떠나는 베테랑 은퇴";
+            document.getElementById('ending-subtitle').innerText = `${player.name} 선수의 위대한 커리어 결산`;
+
+            const grid = document.getElementById('ending-stats-grid');
+            if (player.position === 'batter') {
+                const avg = player.atBats > 0 ? (player.hits / player.atBats).toFixed(3) : ".000";
+                grid.innerHTML = `
+                    <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">은퇴 나이</span><span class="font-bold text-amber-400 text-sm">${player.age}세</span></div>
+                    <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">통산 타율</span><span class="font-bold text-cyan-400 text-sm">${avg}</span></div>
+                    <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">통산 안타 / 홈런</span><span class="font-bold text-emerald-400 text-sm">${player.hits}안타 / ${player.homeRuns}홈런</span></div>
+                    <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">획득 트로피</span><span class="font-bold text-purple-400 text-sm">${player.trophies.length}개</span></div>
+                `;
+            } else {
+                const era = player.inningsPitched > 0 ? ((player.earnedRuns * 9) / player.inningsPitched).toFixed(2) : "0.00";
+                grid.innerHTML = `
+                    <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">은퇴 나이</span><span class="font-bold text-amber-400 text-sm">${player.age}세</span></div>
+                    <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">통산 방어율</span><span class="font-bold text-cyan-400 text-sm">${era}</span></div>
+                    <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">통산 승리 / 탈삼진</span><span class="font-bold text-emerald-400 text-sm">${player.wins}승 / ${player.strikeOuts}K</span></div>
+                    <div class="bg-slate-900 p-3 rounded-xl"><span class="text-slate-400 block">획득 트로피</span><span class="font-bold text-purple-400 text-sm">${player.trophies.length}개</span></div>
+                `;
+            }
+
+            document.getElementById('ending-story-text').innerText = isLegend
+                ? `${player.name} 선수는 유소년 시절부터 철저한 자기관리와 뛰어난 야구 지능으로 시대를 지배했습니다. 영구결번과 함께 KBO 명예의 전당에 영원히 이름을 남깁니다.`
+                : `${player.name} 선수는 그라운드 위에서 언제나 최선을 다하는 플레이로 팬들의 뜨거운 박수를 받으며 화려한 선수 생활의 마침표를 찍었습니다.`;
+        }
+
+        function selectMiniOption(type) {
+            selectedOptionType = type;
+            document.querySelectorAll('#pitch-selector-buttons button').forEach(b => {
+                b.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-slate-300 transition cursor-pointer";
+            });
+            const activeBtn = document.getElementById(`opt-btn-${type}`);
+            if (activeBtn) {
+                activeBtn.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 border border-amber-400 shadow transition cursor-pointer";
+            }
+        }
+
+        function startMatchGame() {
+            if (player.stamina < 20) {
+                logActivity('⚠️ 체력이 부족하여 경기에 출전할 수 없습니다. 휴식을 취하세요!');
+                return;
+            }
+            player.stamina -= 20;
+
+            document.getElementById('screen-dashboard').classList.add('hidden');
+            document.getElementById('screen-minigame').classList.remove('hidden');
+
+            ballsRemaining = 5;
+            comboCount = 0;
+            miniGameActive = true;
+            isPitchAnimating = false;
+
+            setupMiniGameControls();
+            renderStaticField();
+
+            document.getElementById('game-score-badge').innerText = `COMBO ${comboCount} | 남은 승부: ${ballsRemaining}`;
+            document.getElementById('game-overlay-msg').classList.add('hidden');
+            document.getElementById('strike-zone-overlay').classList.remove('hidden');
+        }
+
+        function setupMiniGameControls() {
+            const btnContainer = document.getElementById('pitch-selector-buttons');
+            const label = document.getElementById('control-bar-label');
+            const guideText = document.getElementById('zone-guide-text');
+            btnContainer.innerHTML = '';
+
+            if (player.position === 'pitcher') {
+                document.getElementById('game-title-text').innerText = "9회말 1사 만루 위기 탈출!";
+                document.getElementById('game-sub-text').innerText = "구종과 코스를 조합해 타자를 제압하세요.";
+                label.innerText = "1. 구종 선택:";
+                guideText.innerText = "2. 던질 스트라이크 존 코스를 선택하세요!";
+
+                const pitches = [
+                    { id: 'fastball', label: '🔥 강속구' },
+                    { id: 'slider', label: '🌀 슬라이더' },
+                    { id: 'curve', label: '⚾ 낙차 커브' }
+                ];
+                selectedOptionType = 'fastball';
+                pitches.forEach((p, idx) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.id = `opt-btn-${p.id}`;
+                    btn.innerText = p.label;
+                    
+                    const handleOptClick = (e) => {
+                        if (e) e.preventDefault();
+                        selectMiniOption(p.id);
+                    };
+                    btn.onclick = handleOptClick;
+                    btn.ontouchstart = handleOptClick;
+
+                    btn.className = idx === 0
+                        ? "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 border border-amber-400 shadow transition cursor-pointer"
+                        : "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-slate-300 transition cursor-pointer";
+                    btnContainer.appendChild(btn);
+                });
+            } else {
+                document.getElementById('game-title-text').innerText = "9회말 2아웃 만루 역전 찬스!";
+                document.getElementById('game-sub-text').innerText = "투수의 코스를 예측해 방망이를 돌리세요.";
+                label.innerText = "1. 스윙 스타일:";
+                guideText.innerText = "2. 노릴 스트라이크 존 코스를 클릭하세요!";
+
+                const swings = [
+                    { id: 'power', label: '💥 풀스윙 (홈런 노림)' },
+                    { id: 'contact', label: '🎯 컨택 스윙 (정교한 타격)' }
+                ];
+                selectedOptionType = 'power';
+                swings.forEach((s, idx) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.id = `opt-btn-${s.id}`;
+                    btn.innerText = s.label;
+
+                    const handleSwingClick = (e) => {
+                        if (e) e.preventDefault();
+                        selectMiniOption(s.id);
+                    };
+                    btn.onclick = handleSwingClick;
+                    btn.ontouchstart = handleSwingClick;
+
+                    btn.className = idx === 0
+                        ? "px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 border border-amber-400 shadow transition cursor-pointer"
+                        : "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-700 text-slate-300 transition cursor-pointer";
+                    btnContainer.appendChild(btn);
+                });
+            }
+
+            const zoneGrid = document.getElementById('zone-grid-buttons');
+            zoneGrid.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const isCorner = [0, 2, 6, 8].includes(i);
+                const isCenter = i === 4;
+                const cell = document.createElement('button');
+                cell.type = 'button';
+                cell.className = `rounded-xl border flex flex-col items-center justify-center p-1 transition transform active:scale-95 cursor-pointer ${
+                    isCenter
+                        ? 'bg-red-500/25 hover:bg-red-500/45 border-red-400/60 text-red-200'
+                        : isCorner
+                        ? 'bg-cyan-500/20 hover:bg-cyan-500/40 border-cyan-400/60 text-cyan-200'
+                        : 'bg-slate-800/60 hover:bg-amber-500/30 border-slate-600/60 text-slate-200'
+                }`;
+                cell.innerHTML = `
+                    <span class="text-[10px] font-black leading-tight text-center">${zoneNames[i].replace(' ', '<br>')}</span>
+                    <span class="text-[9px] opacity-75 mt-0.5">${isCorner ? '코너워크' : isCenter ? '한가운데' : '보더라인'}</span>
+                `;
+                
+                const handleZoneClick = (e) => {
+                    if (e) e.preventDefault();
+                    executeZonePlay(i);
+                };
+                cell.onclick = handleZoneClick;
+                cell.ontouchstart = handleZoneClick;
+
+                zoneGrid.appendChild(cell);
+            }
+        }
+
+        function renderStaticField() {
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            grad.addColorStop(0, "#022c22");
+            grad.addColorStop(1, "#064e3b");
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.beginPath();
+            ctx.moveTo(320, 120);
+            ctx.lineTo(500, 270);
+            ctx.lineTo(320, 410);
+            ctx.lineTo(140, 270);
+            ctx.closePath();
+            ctx.fillStyle = "#78350f";
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(320, 260, 24, 0, Math.PI * 2);
+            ctx.fillStyle = "#92400e";
+            ctx.fill();
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(310, 258, 20, 4);
+        }
+
+        function executeZonePlay(zoneIndex) {
+            if (!miniGameActive || isPitchAnimating) return;
+            isPitchAnimating = true;
+            document.getElementById('strike-zone-overlay').classList.add('hidden');
+
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            const col = zoneIndex % 3;
+            const row = Math.floor(zoneIndex / 3);
+            const targetX = 240 + col * 80;
+            const targetY = 210 + row * 65;
+
+            let progress = 0;
+            const totalFrames = 28;
+
+            function animatePitch() {
+                renderStaticField();
+
+                ctx.strokeStyle = "rgba(251, 191, 36, 0.5)";
+                ctx.lineWidth = 3;
+                ctx.strokeRect(200, 175, 240, 195);
+
+                progress++;
+                const t = progress / totalFrames;
+
+                let curveOffsetX = 0;
+                let curveOffsetY = 0;
+                if (selectedOptionType === 'slider') {
+                    curveOffsetX = Math.sin(t * Math.PI) * 55;
+                } else if (selectedOptionType === 'curve') {
+                    curveOffsetY = -Math.sin(t * Math.PI) * 65;
+                }
+
+                const curX = 320 + (targetX - 320) * t + curveOffsetX;
+                const curY = 95 + (targetY - 95) * t + curveOffsetY;
+                const radius = 6 + t * 12;
+
+                ctx.beginPath();
+                ctx.arc(curX, curY, radius + 4, 0, Math.PI * 2);
+                ctx.fillStyle = selectedOptionType === 'fastball' ? "rgba(239, 68, 68, 0.35)" : "rgba(56, 189, 248, 0.35)";
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(curX, curY, radius, 0, Math.PI * 2);
+                ctx.fillStyle = "#ffffff";
+                ctx.fill();
+
+                if (progress < totalFrames) {
+                    animId = requestAnimationFrame(animatePitch);
+                } else {
+                    resolveZoneOutcome(zoneIndex);
+                }
+            }
+
+            animId = requestAnimationFrame(animatePitch);
+        }
+
+        function resolveZoneOutcome(zoneIndex) {
+            isPitchAnimating = false;
+            const isCorner = [0, 2, 6, 8].includes(zoneIndex);
+            const isCenter = zoneIndex === 4;
+            const aiGuessZone = Math.floor(Math.random() * 9);
+
+            if (player.position === 'pitcher') {
+                let successChance = 0.55 + (player.stat2 + player.stat4) * 0.002;
+                if (isCorner) successChance += 0.18;
+                if (isCenter) successChance -= 0.25;
+                if (zoneIndex === aiGuessZone) successChance -= 0.15;
+
+                const roll = Math.random();
+                if (roll < successChance * 0.65) {
+                    comboCount++;
+                    player.strikeOuts++;
+                    player.inningsPitched += 1;
+                    if (!player.trophies.includes("⚡ 닥터 K 훈장")) player.trophies.push("⚡ 닥터 K 훈장");
+                    playSound('homerun');
+                    playSound('cheer');
+                    showMiniGameResult("⚡ 헛스윙 삼진 (K)!", `[${zoneNames[zoneIndex]}] 코스로 꽂힌 결정구에 타자가 얼어붙었습니다!`, true);
+                } else if (roll < successChance) {
+                    comboCount++;
+                    player.inningsPitched += 1;
+                    playSound('hit');
+                    showMiniGameResult("⚾ 내야 땅볼 범타 처리!", `[${zoneNames[zoneIndex]}] 공략으로 타자의 배트를 밀어냈습니다!`, true);
+                } else {
+                    comboCount = 0;
+                    player.inningsPitched += 1;
+                    player.earnedRuns += 1;
+                    playSound('out');
+                    showMiniGameResult("⚠️ 적시타 허용!", isCenter ? "한가운데 몰린 실투를 타자가 놓치지 않았습니다!" : "타자가 노림수를 가지고 정확히 받아쳤습니다.", false);
+                }
+            } else {
+                const zoneDistance = Math.abs((zoneIndex % 3) - (aiGuessZone % 3)) + Math.abs(Math.floor(zoneIndex / 3) - Math.floor(aiGuessZone / 3));
+                let hitChance = 0.45 + (player.stat2 + player.stat4) * 0.0025;
+                if (zoneDistance === 0) hitChance += 0.35;
+                else if (zoneDistance === 1) hitChance += 0.15;
+                if (selectedOptionType === 'contact') hitChance += 0.12;
+
+                const roll = Math.random();
+                if (roll < hitChance) {
+                    const hrThreshold = selectedOptionType === 'power' ? 0.55 : 0.22;
+                    if (Math.random() < hrThreshold || zoneDistance === 0) {
+                        comboCount++;
+                        player.hits++;
+                        player.homeRuns++;
+                        player.atBats++;
+                        if (!player.trophies.includes("💥 끝내기 홈런 훈장")) player.trophies.push("💥 끝내기 홈런 훈장");
+                        playSound('homerun');
+                        playSound('cheer');
+                        showMiniGameResult("🚀 역전 만루 홈런!!", `[${zoneNames[zoneIndex]}] 노림수 완벽 적중! 타구가 담장을 훌쩍 넘어갑니다!`, true);
+                    } else {
+                        comboCount++;
+                        player.hits++;
+                        player.atBats++;
+                        playSound('hit');
+                        showMiniGameResult("⚾ 싹쓸이 2루타!", `[${zoneNames[zoneIndex]}] 코스를 결대로 밀어쳐 적시타를 기록했습니다!`, true);
+                    }
+                } else {
+                    comboCount = 0;
+                    player.atBats++;
+                    playSound('out');
+                    showMiniGameResult("💨 범타 / 헛스윙 아웃!", `투수가 [${zoneNames[aiGuessZone]}] 코스로 허를 찔렀습니다.`, false);
+                }
+            }
+        }
+
+        function showMiniGameResult(title, subText, isSuccess) {
+            miniGameActive = false;
+            cancelAnimationFrame(animId);
+            const overlay = document.getElementById('game-overlay-msg');
+            document.getElementById('overlay-title').innerText = title;
+            document.getElementById('overlay-sub').innerText = subText;
+            
+            const rewardBadge = document.getElementById('overlay-reward-badge');
+            if (isSuccess) {
+                player.money += player.isPro ? 2 : 10;
+                player.popularity += 3;
+                if (player.position === 'pitcher') {
+                    const ageLimit = getAgeSpeedLimit(player.age);
+                    if (player.stat1 < ageLimit) player.stat1 += 1;
+                    else player.stat4 += 2;
+                } else {
+                    player.stat1 += 1;
+                }
+                player.stat4 += 1;
+                rewardBadge.innerText = `🎁 승리 보상: 능력치 & 멘탈 상승 | 인기도 +3`;
+            } else {
+                rewardBadge.innerText = "❌ 아쉬운 결과: 다음 승부를 준비하세요.";
+            }
+
+            overlay.classList.remove('hidden');
+        }
+
+        function nextBall() {
+            ballsRemaining--;
+            if (ballsRemaining <= 0) {
+                document.getElementById('screen-minigame').classList.add('hidden');
+                document.getElementById('screen-dashboard').classList.remove('hidden');
+                logActivity(`🔥 경기 출전을 마쳤습니다.`);
+                advanceTurn();
+            } else {
+                document.getElementById('game-score-badge').innerText = `COMBO ${comboCount} | 남은 승부: ${ballsRemaining}`;
+                document.getElementById('game-overlay-msg').classList.add('hidden');
+                document.getElementById('strike-zone-overlay').classList.remove('hidden');
+                miniGameActive = true;
+                isPitchAnimating = false;
+                renderStaticField();
+            }
+        }
+
+        window.onload = function() {
+            renderStyleOptions();
+        };
+    </script>
 </body>
 </html>
